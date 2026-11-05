@@ -353,15 +353,15 @@ Docker web service. You can apply it as a Blueprint or create the two resources 
 6. Deploy and wait for `/api/health` to report `"database": "connected"` and
    `"model_loaded": true`.
 
-The service URL has the form `https://signaldesk-api.onrender.com`. The API base is
-`https://signaldesk-api.onrender.com/api`.
+The service URL is `https://signaldesk-api-exs6.onrender.com`. The API base is
+`https://signaldesk-api-exs6.onrender.com/api`.
 
 ### 3. Vercel Frontend
 
 1. Import the same repository into Vercel.
 2. Set **Root Directory** to `frontend`.
 3. Use the Vite preset: build command `npm run build`, output directory `dist`.
-4. Add `VITE_API_BASE_URL` = `https://signaldesk-api.onrender.com/api`.
+4. Add `VITE_API_BASE_URL` = `https://signaldesk-api-exs6.onrender.com/api`.
 5. Deploy, then update `FRONTEND_URL` in Render if you use a custom domain.
 
 `VITE_API_BASE_URL` is read at build time. Redeploy the Vercel project after changing it.
