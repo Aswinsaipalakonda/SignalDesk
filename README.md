@@ -149,7 +149,7 @@ Agents can override a stored ticket's priority; the override is persisted with a
 | ⚡ Backend | Python 3.11+, FastAPI, Pydantic v2, Uvicorn, SQLAlchemy 2.0 |
 | 🧠 Machine Learning | Scikit-learn, Pandas, NumPy, NLTK, Joblib |
 | 🗄️ Database | PostgreSQL / Neon, SQLite fallback for local development |
-| ☁️ Deployment | Vercel (frontend), Render (FastAPI Docker), Neon (PostgreSQL) |
+| ☁️ Deployment | Vercel (frontend), Render (FastAPI Docker + PostgreSQL) |
 
 ## 📁 Project Structure
 
@@ -179,6 +179,7 @@ SignalDesk/
 │   └── requirements.txt
 ├── docs/screenshots/         # README product tour
 ├── assets/                   # Original brand artwork
+├── render.yaml               # Render Blueprint (API + PostgreSQL)
 ├── PRD.md
 └── README.md
 ```
@@ -222,6 +223,18 @@ npm run dev
 Vite proxies `/api` to `http://localhost:8000`. Override with `VITE_API_BASE_URL` when
 the backend is hosted elsewhere.
 
+### 3. Docker (production parity)
+
+The build context must be the repository root because the Dockerfile copies the
+`backend/` directory:
+
+```bash
+docker build -f backend/Dockerfile -t signaldesk-api .
+docker run --rm -p 8000:8000 -e SEED_MAX_ROWS=300 signaldesk-api
+```
+
+The container exposes the API at `http://localhost:8000/api/health`.
+
 ## ✅ Verification Checklist
 
 Use this pass after both services are running.
@@ -253,7 +266,7 @@ Run a prediction directly with PowerShell:
 
 ```powershell
 $body = @{
-  ticket_text = "I was charged twice and need a refund"
+  ticket_text = "I was charged twice and need a refund urgently. This is a billing error."
   save = $false
 } | ConvertTo-Json
 
@@ -309,19 +322,60 @@ production-build validation, then run the manual checklist above in a browser.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `DATABASE_URL` | `sqlite:///./signaldesk.db` | PostgreSQL/Neon URL or SQLite path |
-| `FRONTEND_URL` | `http://localhost:5173` | CORS origin |
-| `SEED_MAX_ROWS` | `0` | Number of dataset rows to seed (0 = all) |
+| `DATABASE_URL` | `sqlite:///./signaldesk.db` | PostgreSQL URL (Render/Neon) or SQLite path |
+| `FRONTEND_URL` | `http://localhost:5173` | Additional allowed CORS origin |
+| `SEED_MAX_ROWS` | `0` | Number of dataset rows to seed (0 = all 11,923) |
 | `MIN_TICKET_LENGTH` | `4` | Minimum accepted ticket length |
-| `VITE_API_BASE_URL` | `/api` | Frontend API base URL |
+| `PORT` | `8000` | Port used by the Docker container |
+| `VITE_API_BASE_URL` | `/api` | Frontend API base URL (build-time in Vite) |
 
 ## ☁️ Deployment
 
-- **Database**: create a Neon PostgreSQL project and copy the connection URI.
-- **Backend**: deploy `backend/Dockerfile` to Render or a similar container host, then set
-  `DATABASE_URL` and `FRONTEND_URL`.
-- **Frontend**: deploy `frontend/` to Vercel and set `VITE_API_BASE_URL` to the backend API
-  URL, for example `https://signaldesk-api.onrender.com/api`.
+The repository includes `render.yaml`, which creates a Render PostgreSQL database and a
+Docker web service. You can apply it as a Blueprint or create the two resources manually.
+
+### 1. Render PostgreSQL
+
+1. In Render, choose **New → Postgres**.
+2. Name it `signaldesk-db`, choose a region, PostgreSQL 16, and a plan.
+3. After it is available, copy the **Internal Database URL**.
+
+### 2. Render API
+
+1. Choose **New → Web Service** and connect this GitHub repository.
+2. Set **Language** to `Docker`, **Branch** to `main`, and **Root Directory** to `.`.
+3. Set **Dockerfile Path** to `backend/Dockerfile`.
+4. Set **Health Check Path** to `/api/health`.
+5. Add these environment variables:
+   - `DATABASE_URL` = the Render Postgres internal URL
+   - `FRONTEND_URL` = `https://signaldesk.vercel.app`
+   - `SEED_MAX_ROWS` = `0` (or a smaller value such as `300` for a light demo)
+6. Deploy and wait for `/api/health` to report `"database": "connected"` and
+   `"model_loaded": true`.
+
+The service URL has the form `https://signaldesk-api.onrender.com`. The API base is
+`https://signaldesk-api.onrender.com/api`.
+
+### 3. Vercel Frontend
+
+1. Import the same repository into Vercel.
+2. Set **Root Directory** to `frontend`.
+3. Use the Vite preset: build command `npm run build`, output directory `dist`.
+4. Add `VITE_API_BASE_URL` = `https://signaldesk-api.onrender.com/api`.
+5. Deploy, then update `FRONTEND_URL` in Render if you use a custom domain.
+
+`VITE_API_BASE_URL` is read at build time. Redeploy the Vercel project after changing it.
+
+### Docker build notes
+
+Build from the repository root so `COPY backend/ ...` resolves correctly:
+
+```bash
+docker build -f backend/Dockerfile -t signaldesk-api .
+```
+
+Free Render web services spin down after inactivity. The frontend API client uses a
+60-second timeout to allow for cold starts.
 
 ## ⚠️ Limitations
 
@@ -330,6 +384,8 @@ production-build validation, then run the manual checklist above in a browser.
 - The bundled dataset is benchmark-style, not live customer data.
 - No authentication, chat/email ingestion, or billing integration is included.
 - Category quality depends on the labels in the dataset used for training.
+- Render free web services spin down when idle, and free PostgreSQL instances are
+  time-limited. Use paid resources for a persistent production deployment.
 
 ---
 

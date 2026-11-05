@@ -1,12 +1,18 @@
-"""Pydantic Request and Response Schemas for Support Tickets."""
+"""Pydantic request and response schemas for support tickets."""
 
 from typing import Dict, List, Optional
+
 from pydantic import BaseModel, Field
 
 
 class TicketPredictRequest(BaseModel):
-    ticket_text: str = Field(..., min_length=4, description="Customer inquiry or message to classify.")
-    save: bool = Field(True, description="Whether to persist the prediction into database history.")
+    ticket_text: str = Field(
+        ...,
+        min_length=4,
+        max_length=8000,
+        description="Customer inquiry or message to classify.",
+    )
+    save: bool = Field(True, description="Whether to persist the prediction in history.")
 
 
 class TicketPredictResponse(BaseModel):
@@ -22,6 +28,7 @@ class TicketPredictResponse(BaseModel):
     probabilities: Dict[str, float]
     latency_ms: float
     status: str = "Success"
+    saved: bool = False
 
 
 class TicketResponse(BaseModel):
@@ -40,3 +47,12 @@ class TicketListResponse(BaseModel):
     page: int
     limit: int
     items: List[TicketResponse]
+
+
+class TicketPriorityUpdate(BaseModel):
+    priority: str = Field(..., description="One of High, Medium, Low.")
+    reason: Optional[str] = Field(
+        None,
+        max_length=500,
+        description="Optional human note explaining the manual correction.",
+    )

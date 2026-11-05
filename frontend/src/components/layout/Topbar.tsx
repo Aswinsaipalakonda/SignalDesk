@@ -1,158 +1,298 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, SlidersHorizontal, Sun, Moon, Bell, Plus, X, ArrowUpRight } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+  FiArrowUpRight,
+  FiBell,
+  FiCheckCircle,
+  FiChevronRight,
+  FiLoader,
+  FiMenu,
+  FiPlus,
+  FiSearch,
+  FiX,
+} from 'react-icons/fi';
 import { api } from '../../services/api';
 import { Ticket } from '../../types';
+import { formatRelativeTime, truncate } from '../../lib/format';
 
 interface TopbarProps {
-  onNewTicketClick?: () => void;
-  onSelectTicket?: (ticket: Ticket) => void;
-  currentPageTitle?: string;
-  onNavigateAnalyze?: () => void;
+  currentPageTitle: string;
+  onMenuClick: () => void;
+  onNavigateAnalyze: () => void;
+  onSelectTicket: (ticket: Ticket) => void;
 }
 
 export const Topbar: React.FC<TopbarProps> = ({
-  onNewTicketClick,
-  onSelectTicket,
-  currentPageTitle = 'Overview',
+  currentPageTitle,
+  onMenuClick,
   onNavigateAnalyze,
+  onSelectTicket,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState<Ticket[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [highPriority, setHighPriority] = useState<Ticket[]>([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
 
-  const handleAction = onNewTicketClick || onNavigateAnalyze || (() => {});
+  const searchRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const notificationsRef = useRef<HTMLDivElement>(null);
 
-  // Auto-search debounce effect
   useEffect(() => {
-    if (!searchQuery.trim() || searchQuery.length < 2) {
-      setResults([]);
-      setShowDropdown(false);
-      return;
-    }
-
     const timer = setTimeout(async () => {
+      if (searchQuery.trim().length < 2) {
+        setResults([]);
+        setShowDropdown(false);
+        return;
+      }
       setIsSearching(true);
       try {
-        const res = await api.getTickets(1, 6, undefined, undefined, searchQuery);
-        setResults(res.items || []);
+        const response = await api.getTickets(1, 6, undefined, undefined, searchQuery);
+        setResults(response.items || []);
         setShowDropdown(true);
-      } catch (err) {
-        console.error('Search error:', err);
+      } catch {
+        setResults([]);
       } finally {
         setIsSearching(false);
       }
-    }, 250);
+    }, 260);
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Click outside listener to close dropdown
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+    const onClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setShowDropdown(false);
       }
+      if (
+        notificationsRef.current &&
+        !notificationsRef.current.contains(event.target as Node)
+      ) {
+        setNotificationsOpen(false);
+      }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        inputRef.current?.focus();
+      }
+      if (event.key === 'Escape') {
+        setShowDropdown(false);
+        setNotificationsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onClickOutside);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onClickOutside);
+      document.removeEventListener('keydown', onKeyDown);
+    };
   }, []);
 
+  const openNotifications = async () => {
+    const nextOpen = !notificationsOpen;
+    setNotificationsOpen(nextOpen);
+    if (!nextOpen || highPriority.length > 0) return;
+    setNotificationsLoading(true);
+    try {
+      const response = await api.getTickets(1, 5, undefined, 'High');
+      setHighPriority(response.items || []);
+    } catch {
+      setHighPriority([]);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  };
+
   return (
-    <header className="flex items-center justify-between py-4 px-8 border-b border-[#E8EFE9] bg-white/80 backdrop-blur-md sticky top-0 z-30">
-      {/* Auto Search Bar */}
-      <div className="relative flex-1 max-w-md" ref={dropdownRef}>
-        <div className="flex items-center bg-[#F7FAF8] hover:bg-[#F0F5F2] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#019077]/20 border border-[#E2EBE4] rounded-2xl px-3.5 py-2.5 transition-all">
-          <Search size={16} className="text-[#019077] shrink-0 mr-2.5" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => { if (results.length > 0) setShowDropdown(true); }}
-            placeholder="Search customer inquiries, departments, tickets..."
-            className="w-full bg-transparent text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
-          />
-          {searchQuery && (
-            <button onClick={() => { setSearchQuery(''); setResults([]); }} className="text-slate-400 hover:text-slate-600 mr-2">
-              <X size={14} />
-            </button>
-          )}
-          <span className="text-[10px] font-mono font-bold bg-white text-slate-500 border border-[#E2EBE4] px-1.5 py-0.5 rounded-md shadow-2xs mr-2 shrink-0">
-            ⌘K
-          </span>
-          <button className="text-slate-400 hover:text-[#003437] shrink-0" title="Search Filters">
-            <SlidersHorizontal size={14} />
-          </button>
+    <header className="sticky top-0 z-30 border-b border-line/80 bg-canvas/80 backdrop-blur-xl">
+      <div className="flex h-[72px] items-center gap-3 px-4 md:gap-5 md:px-7 xl:px-10">
+        <button
+          onClick={onMenuClick}
+          className="icon-btn lg:hidden"
+          aria-label="Open navigation"
+        >
+          <FiMenu size={18} />
+        </button>
+
+        <div className="hidden min-w-0 items-center gap-2 whitespace-nowrap text-[12px] md:flex">
+          <span className="font-medium text-ink-muted">Workspace</span>
+          <FiChevronRight size={13} className="text-ink-muted/40" />
+          <span className="font-semibold text-ink">{currentPageTitle}</span>
         </div>
 
-        {/* Live Auto-Search Results Dropdown */}
-        {showDropdown && (
-          <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-[#E2EBE4] rounded-2xl shadow-xl p-2 z-50 max-h-80 overflow-y-auto">
-            <div className="text-[10px] font-bold text-[#019077] uppercase tracking-wider px-3 py-1.5">
-              {isSearching ? 'Searching...' : `Found ${results.length} Matching Inquiries`}
-            </div>
-            {results.length === 0 && !isSearching && (
-              <div className="text-xs text-slate-500 px-3 py-3 text-center">
-                No tickets match "{searchQuery}"
-              </div>
-            )}
-            {results.map((t) => (
-              <div
-                key={t.id}
+        <div ref={searchRef} className="relative ml-auto w-full max-w-[480px] flex-1 md:ml-2">
+          <div className="flex h-10 items-center gap-2.5 rounded-xl border border-line bg-white px-3.5 shadow-sm transition-all focus-within:border-brand-300 focus-within:ring-4 focus-within:ring-brand-500/10">
+            <FiSearch size={16} className="shrink-0 text-ink-muted/70" />
+            <input
+              ref={inputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              onFocus={() => {
+                if (results.length > 0) setShowDropdown(true);
+              }}
+              placeholder="Search tickets, IDs, or categories"
+              className="w-full bg-transparent text-[13px] text-ink placeholder:text-ink-muted/60 focus:outline-none"
+            />
+            {isSearching && <FiLoader size={14} className="animate-spin text-brand-500" />}
+            {searchQuery && !isSearching && (
+              <button
                 onClick={() => {
-                  if (onSelectTicket) onSelectTicket(t);
+                  setSearchQuery('');
+                  setResults([]);
                   setShowDropdown(false);
                 }}
-                className="p-2.5 hover:bg-[#F7FAF8] rounded-xl cursor-pointer flex items-center justify-between text-xs transition-colors"
+                className="text-ink-muted/60 transition-colors hover:text-ink"
+                aria-label="Clear search"
               >
-                <div className="truncate max-w-[300px]">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="font-mono font-bold text-[#003437] text-[11px]">{t.id}</span>
-                    <span className="text-[10px] font-bold bg-[#E6F4EF] text-[#019077] px-1.5 py-0.2 rounded">
-                      {t.predicted_category}
+                <FiX size={14} />
+              </button>
+            )}
+            <kbd className="hidden shrink-0 rounded-md border border-line bg-[#F9FAFC] px-1.5 py-0.5 font-sans text-[10px] font-semibold text-ink-muted/70 sm:block">
+              Ctrl K
+            </kbd>
+          </div>
+
+          <AnimatePresence>
+            {showDropdown && (
+              <motion.div
+                initial={{ opacity: 0, y: -6, scale: 0.99 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.99 }}
+                transition={{ duration: 0.15 }}
+                className="absolute left-0 right-0 top-full z-50 mt-2 max-h-80 overflow-y-auto rounded-2xl border border-line bg-white p-2 shadow-float"
+              >
+                <div className="flex items-center justify-between px-3 py-2 text-[10px] font-bold uppercase tracking-[0.1em] text-ink-muted">
+                  <span>{isSearching ? 'Searching...' : 'Matching tickets'}</span>
+                  <span className="rounded-md bg-brand-50 px-1.5 py-0.5 text-brand-600">
+                    {results.length}
+                  </span>
+                </div>
+                {!isSearching && results.length === 0 && (
+                  <div className="px-3 py-8 text-center text-[12px] text-ink-muted">
+                    No tickets found for "{searchQuery}"
+                  </div>
+                )}
+                {results.map((ticket) => (
+                  <button
+                    key={ticket.id}
+                    onClick={() => {
+                      onSelectTicket(ticket);
+                      setShowDropdown(false);
+                      setSearchQuery('');
+                    }}
+                    className="group flex w-full items-center justify-between gap-3 rounded-xl p-3 text-left transition-colors hover:bg-brand-50/60"
+                  >
+                    <div className="min-w-0">
+                      <div className="mb-1 flex items-center gap-2">
+                        <span className="font-mono text-[11px] font-semibold text-brand-600">
+                          {ticket.id}
+                        </span>
+                        <span className="rounded-md bg-[#F3F4F8] px-1.5 py-0.5 text-[9px] font-semibold text-ink-muted">
+                          {ticket.predicted_category}
+                        </span>
+                      </div>
+                      <div className="truncate text-[12px] text-ink-soft">
+                        {truncate(ticket.ticket_text, 92)}
+                      </div>
+                    </div>
+                    <FiArrowUpRight
+                      size={15}
+                      className="shrink-0 text-ink-muted/40 transition-colors group-hover:text-brand-600"
+                    />
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <div className="flex items-center gap-2 md:gap-2.5">
+          <div ref={notificationsRef} className="relative">
+            <button
+              onClick={openNotifications}
+              className="icon-btn relative"
+              aria-label="High priority notifications"
+            >
+              <FiBell size={16} />
+              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white" />
+            </button>
+
+            <AnimatePresence>
+              {notificationsOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-full z-50 mt-2 w-[340px] overflow-hidden rounded-2xl border border-line bg-white shadow-float sm:w-[360px]"
+                >
+                  <div className="flex items-center justify-between border-b border-line/80 px-4 py-3.5">
+                    <div>
+                      <div className="text-[13px] font-semibold text-ink">High priority queue</div>
+                      <div className="mt-0.5 text-[11px] text-ink-muted">
+                        Latest rule-based escalations
+                      </div>
+                    </div>
+                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+                      <FiCheckCircle size={15} />
                     </span>
                   </div>
-                  <div className="text-slate-600 truncate text-[11px]">{t.ticket_text}</div>
-                </div>
-                <ArrowUpRight size={14} className="text-[#019077] shrink-0 ml-2" />
-              </div>
-            ))}
+                  {notificationsLoading ? (
+                    <div className="flex items-center justify-center gap-2 px-4 py-10 text-[12px] text-ink-muted">
+                      <FiLoader size={14} className="animate-spin" /> Loading queue...
+                    </div>
+                  ) : highPriority.length === 0 ? (
+                    <div className="px-4 py-10 text-center text-[12px] text-ink-muted">
+                      No high priority tickets in history.
+                    </div>
+                  ) : (
+                    <div className="max-h-80 overflow-y-auto p-2">
+                      {highPriority.map((ticket) => (
+                        <button
+                          key={ticket.id}
+                          onClick={() => {
+                            onSelectTicket(ticket);
+                            setNotificationsOpen(false);
+                          }}
+                          className="w-full rounded-xl p-3 text-left transition-colors hover:bg-[#F9FAFC]"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-mono text-[10px] font-semibold text-rose-600">
+                              {ticket.id}
+                            </span>
+                            <span className="text-[10px] text-ink-muted">
+                              {formatRelativeTime(ticket.created_at)}
+                            </span>
+                          </div>
+                          <div className="mt-1.5 line-clamp-2 text-[12px] leading-relaxed text-ink-soft">
+                            {ticket.ticket_text}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        )}
-      </div>
 
-      {/* Right Controls */}
-      <div className="flex items-center gap-4">
-        {/* Breadcrumb indicator */}
-        <div className="hidden md:flex items-center gap-1.5 text-xs text-slate-400 font-medium">
-          <span>Workspace</span>
-          <span>/</span>
-          <span className="font-bold text-[#003437]">{currentPageTitle}</span>
+          <button onClick={onNavigateAnalyze} className="btn-primary hidden sm:inline-flex">
+            <FiPlus size={16} />
+            New analysis
+          </button>
+          <button
+            onClick={onNavigateAnalyze}
+            className="icon-btn border-brand-600 bg-brand-600 text-white hover:border-brand-700 hover:bg-brand-700 hover:text-white sm:hidden"
+            aria-label="New analysis"
+          >
+            <FiPlus size={18} />
+          </button>
         </div>
-
-        {/* Notification Bell */}
-        <button className="relative w-9 h-9 rounded-full bg-white border border-[#E2EBE4] flex items-center justify-center text-slate-600 hover:text-[#003437] shadow-2xs transition-colors">
-          <Bell size={16} />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#019077] rounded-full ring-2 ring-white"></span>
-        </button>
-
-        {/* User Pill Badge */}
-        <div className="flex items-center gap-2 pl-2 border-l border-[#E8EFE9]">
-          <div className="w-8 h-8 rounded-full bg-[#003437] text-white flex items-center justify-center font-bold text-xs shadow-xs">
-            SD
-          </div>
-          <span className="text-xs font-bold text-slate-700 hidden sm:inline">Support Lead</span>
-        </div>
-
-        {/* Primary Action Button using assets/logo.png botanical green */}
-        <button
-          onClick={handleAction}
-          className="inline-flex items-center gap-1.5 bg-[#003437] hover:bg-[#014d4e] text-white text-xs font-bold px-4 py-2.5 rounded-2xl transition-all shadow-md shadow-[#003437]/15 hover:shadow-lg active:scale-95"
-        >
-          <Plus size={15} strokeWidth={2.5} />
-          <span>Analyze a Ticket</span>
-        </button>
       </div>
     </header>
   );

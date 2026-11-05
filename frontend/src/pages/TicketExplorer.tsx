@@ -1,328 +1,570 @@
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Search, Download, Filter, ChevronLeft, ChevronRight, Eye, X } from 'lucide-react';
-import { api } from '../services/api';
+import React, { useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+  FiAlertCircle,
+  FiChevronLeft,
+  FiChevronRight,
+  FiDownload,
+  FiEye,
+  FiFilter,
+  FiInbox,
+  FiLoader,
+  FiRefreshCw,
+  FiSearch,
+  FiShield,
+  FiX,
+} from 'react-icons/fi';
+import { api, getApiErrorMessage } from '../services/api';
 import { Ticket } from '../types';
+import { PageHeader } from '../components/ui/PageHeader';
+import { formatDate, formatRelativeTime, truncate } from '../lib/format';
 
-export const TicketExplorer: React.FC = () => {
+interface TicketExplorerProps {
+  initialTicket?: Ticket | null;
+  onInitialTicketHandled?: () => void;
+}
+
+const PAGE_SIZE = 10;
+const PRIORITIES = ['All', 'High', 'Medium', 'Low'];
+const FALLBACK_CATEGORIES = [
+  'Technical Support',
+  'Product Issues',
+  'Account & Service',
+  'Billing & Payment',
+  'Order & Delivery',
+  'General Inquiry',
+];
+
+export const TicketExplorer: React.FC<TicketExplorerProps> = ({
+  initialTicket,
+  onInitialTicketHandled,
+}) => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [limit] = useState(12);
   const [category, setCategory] = useState('All');
   const [priority, setPriority] = useState('All');
+  const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
+  const [categories, setCategories] = useState<string[]>(FALLBACK_CATEGORIES);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-
-  const categories = [
-    'All',
-    'Technical Support',
-    'Product Issues',
-    'Account & Service',
-    'Billing & Payment',
-    'Order & Delivery',
-    'General Inquiry',
-  ];
-
-  const priorities = ['All', 'High', 'Medium', 'Low'];
-
-  const fetchTickets = async () => {
-    setLoading(true);
-    try {
-      const res = await api.getTickets(page, limit, category, priority, search);
-      setTickets(res.items || []);
-      setTotal(res.total || 0);
-    } catch (err) {
-      console.error('Failed to load tickets:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [modalPriority, setModalPriority] = useState('Low');
+  const [savingPriority, setSavingPriority] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    fetchTickets();
-  }, [page, category, priority]);
+    if (!initialTicket) return;
+    setSelectedTicket(initialTicket);
+    setModalPriority(initialTicket.priority);
+    onInitialTicketHandled?.();
+  }, [initialTicket, onInitialTicketHandled]);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPage(1);
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .getDatasetInfo()
+      .then((info) => {
+        if (cancelled) return;
+        const values = Object.keys(info.categories || {});
+        if (values.length > 0) setCategories(values.sort());
+      })
+      .catch(() => {
+        /* Keep fallback categories when the API is still starting. */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setSearch(searchInput.trim());
+      setPage(1);
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [searchInput]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchTickets = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await api.getTickets(page, PAGE_SIZE, category, priority, search);
+        if (cancelled) return;
+        setTickets(response.items || []);
+        setTotal(response.total || 0);
+      } catch (err) {
+        if (!cancelled) {
+          setError(getApiErrorMessage(err, 'Unable to load ticket history.'));
+          setTickets([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
     fetchTickets();
+    return () => {
+      cancelled = true;
+    };
+  }, [page, category, priority, search, refreshKey]);
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const activeFilterCount = useMemo(
+    () =>
+      [category !== 'All', priority !== 'All', search.length > 0].filter(Boolean).length,
+    [category, priority, search],
+  );
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  const clearFilters = () => {
+    setCategory('All');
+    setPriority('All');
+    setSearchInput('');
+    setSearch('');
+    setPage(1);
   };
 
   const exportCsv = () => {
     if (!tickets.length) return;
     const headers = ['ID', 'Category', 'Priority', 'Confidence', 'Text', 'Created At'];
-    const rows = tickets.map((t) => [
-      t.id,
-      t.predicted_category,
-      t.priority,
-      t.confidence,
-      `"${t.ticket_text.replace(/"/g, '""')}"`,
-      t.created_at,
+    const rows = tickets.map((ticket) => [
+      ticket.id,
+      ticket.predicted_category,
+      ticket.priority,
+      ticket.confidence,
+      `"${ticket.ticket_text.replace(/"/g, '""')}"`,
+      ticket.created_at,
     ]);
-    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const csv = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `SignalDesk_Tickets_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute(
+      'download',
+      `SignalDesk_Tickets_${new Date().toISOString().slice(0, 10)}.csv`,
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
-  const totalPages = Math.ceil(total / limit) || 1;
+  const openTicket = (ticket: Ticket) => {
+    setSelectedTicket(ticket);
+    setModalPriority(ticket.priority);
+    setToast(null);
+  };
+
+  const savePriority = async () => {
+    if (!selectedTicket) return;
+    setSavingPriority(true);
+    try {
+      const updated = await api.updateTicketPriority(
+        selectedTicket.id,
+        modalPriority,
+        'Priority manually corrected by a support agent from the Ticket Explorer.',
+      );
+      setSelectedTicket(updated);
+      setTickets((current) =>
+        current.map((ticket) => (ticket.id === updated.id ? updated : ticket)),
+      );
+      setToast(`Ticket ${updated.id} priority set to ${updated.priority}.`);
+      window.setTimeout(() => setToast(null), 3000);
+    } catch (err) {
+      setToast(getApiErrorMessage(err, 'Could not update priority.'));
+    } finally {
+      setSavingPriority(false);
+    }
+  };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: 'easeOut' }}
-      className="p-6 lg:p-8 max-w-[1440px] mx-auto space-y-7"
-    >
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
-            <span>SignalDesk</span>
-            <span>&gt;</span>
-            <span className="text-[#003437]">Ticket Explorer</span>
-          </div>
-          <h1 className="text-2xl lg:text-3xl font-extrabold text-[#003437] tracking-tight">
-            Historical Inquiry Archive
-          </h1>
-          <p className="text-xs text-slate-500">
-            Audit, search, and inspect {total.toLocaleString()} processed customer tickets with verified triage metadata.
-          </p>
-        </div>
-        <button
-          onClick={exportCsv}
-          className="inline-flex items-center gap-2 bg-[#003437] hover:bg-[#014d4e] text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-md shadow-[#003437]/15 transition-all self-start md:self-auto active:scale-95"
-        >
-          <Download size={14} />
-          <span>Export Archive CSV</span>
-        </button>
-      </div>
+    <div className="page-shell space-y-6">
+      <PageHeader
+        eyebrow="Ticket Explorer"
+        title="Search every decision."
+        description={`Audit, search, and inspect ${total.toLocaleString()} stored tickets with model confidence and transparent priority rationale.`}
+        actions={
+          <>
+            <button
+              onClick={() => setRefreshKey((key) => key + 1)}
+              className="btn-secondary h-10"
+              title="Refresh"
+            >
+              <FiRefreshCw size={13} className={loading ? 'animate-spin' : ''} />
+              Refresh
+            </button>
+            <button onClick={exportCsv} disabled={!tickets.length} className="btn-primary h-10">
+              <FiDownload size={13} />
+              Export page
+            </button>
+          </>
+        }
+      />
 
-      {/* Filter Bar */}
-      <div className="bg-white border border-[#E2EBE4] rounded-2xl p-5 shadow-[0_2px_12px_-2px_rgba(0,52,55,0.04)]">
-        <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 md:grid-cols-12 gap-3.5">
-          <div className="md:col-span-6 relative">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by keywords, subject, or ticket text..."
-              className="w-full pl-9 pr-4 py-2.5 bg-[#FAFBF9] border border-[#E2EBE4] focus:border-[#019077] rounded-2xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#019077]/10 transition-all"
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="card p-4"
+      >
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
+          <div className="relative md:col-span-6">
+            <FiSearch
+              size={15}
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-muted"
             />
+            <input
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              placeholder="Search ticket text, ID, or department..."
+              className="input-field h-11 pl-10 pr-9"
+            />
+            {searchInput && (
+              <button
+                onClick={() => setSearchInput('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-muted transition-colors hover:text-ink"
+                aria-label="Clear search"
+              >
+                <FiX size={14} />
+              </button>
+            )}
           </div>
 
-          <div className="md:col-span-3">
-            <select
-              value={category}
-              onChange={(e) => {
-                setCategory(e.target.value);
-                setPage(1);
-              }}
-              className="w-full px-3.5 py-2.5 bg-[#FAFBF9] border border-[#E2EBE4] text-xs font-semibold text-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#019077]/10 cursor-pointer"
-            >
-              {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c === 'All' ? 'All Departments' : c}
-                </option>
-              ))}
-            </select>
-          </div>
+          <select
+            value={category}
+            onChange={(event) => {
+              setCategory(event.target.value);
+              setPage(1);
+            }}
+            className="input-field h-11 cursor-pointer md:col-span-3"
+          >
+            <option value="All">All departments</option>
+            {categories.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
+          </select>
 
-          <div className="md:col-span-2">
-            <select
-              value={priority}
-              onChange={(e) => {
-                setPriority(e.target.value);
-                setPage(1);
-              }}
-              className="w-full px-3.5 py-2.5 bg-[#FAFBF9] border border-[#E2EBE4] text-xs font-semibold text-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#019077]/10 cursor-pointer"
-            >
-              {priorities.map((p) => (
-                <option key={p} value={p}>
-                  {p === 'All' ? 'All Priorities' : `${p} Priority`}
-                </option>
-              ))}
-            </select>
-          </div>
+          <select
+            value={priority}
+            onChange={(event) => {
+              setPriority(event.target.value);
+              setPage(1);
+            }}
+            className="input-field h-11 cursor-pointer md:col-span-2"
+          >
+            {PRIORITIES.map((item) => (
+              <option key={item} value={item}>
+                {item === 'All' ? 'All priorities' : `${item} priority`}
+              </option>
+            ))}
+          </select>
 
           <div className="md:col-span-1">
             <button
-              type="submit"
-              className="w-full h-full bg-[#E6F4EF] hover:bg-[#d5eee5] text-[#003437] text-xs font-bold py-2.5 rounded-2xl transition-colors flex items-center justify-center gap-1"
+              onClick={clearFilters}
+              disabled={activeFilterCount === 0}
+              className="flex h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-line bg-[#FAFBFD] text-[11px] font-semibold text-ink-muted transition-colors hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 disabled:opacity-40"
+              title="Clear filters"
             >
-              <Filter size={13} />
-              <span>Apply</span>
+              <FiFilter size={13} />
+              {activeFilterCount || ''}
             </button>
           </div>
-        </form>
-      </div>
+        </div>
+      </motion.div>
 
-      {/* Table Card */}
-      <div className="bg-white border border-[#E2EBE4] rounded-3xl p-6 shadow-[0_2px_12px_-2px_rgba(0,52,55,0.04)]">
-        {loading ? (
-          <div className="py-20 text-center">
-            <div className="w-7 h-7 border-3 border-[#003437] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-            <p className="text-xs text-slate-400">Loading inquiries...</p>
-          </div>
-        ) : tickets.length === 0 ? (
-          <div className="py-20 text-center text-slate-400">
-            <p className="text-sm font-bold text-[#003437]">No records found</p>
-            <p className="text-xs text-slate-400 mt-1">Try relaxing your search terms or filters.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-slate-100 text-slate-400 font-medium">
-                  <th className="py-3 px-3">ID</th>
-                  <th className="py-3 px-3">Department</th>
-                  <th className="py-3 px-3">Severity</th>
-                  <th className="py-3 px-3">Confidence</th>
-                  <th className="py-3 px-3">Message Snippet</th>
-                  <th className="py-3 px-3">Date</th>
-                  <th className="py-3 px-3 text-right">Action</th>
+      {error && (
+        <div className="flex items-center gap-2 rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-[12px] font-medium text-rose-600">
+          <FiAlertCircle size={15} />
+          {error}
+        </div>
+      )}
+
+      {toast && (
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-2 rounded-2xl border border-mint-100 bg-mint-50 px-4 py-3 text-[12px] font-medium text-mint-700"
+        >
+          <FiShield size={14} className="text-mint-600" />
+          {toast}
+        </motion.div>
+      )}
+
+      <div className="card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[820px] text-left text-xs">
+            <thead>
+              <tr className="border-b border-line bg-[#F8F9FC] text-[9.5px] uppercase tracking-[0.1em] text-ink-muted">
+                <th className="px-5 py-3.5 font-semibold">Ticket</th>
+                <th className="px-5 py-3.5 font-semibold">Department</th>
+                <th className="px-5 py-3.5 font-semibold">Priority</th>
+                <th className="px-5 py-3.5 font-semibold">Confidence</th>
+                <th className="px-5 py-3.5 font-semibold">Message</th>
+                <th className="px-5 py-3.5 font-semibold">Created</th>
+                <th className="px-5 py-3.5 text-right font-semibold">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line/70">
+              {loading ? (
+                [...Array(6)].map((_, index) => (
+                  <tr key={index} className="animate-pulse">
+                    <td className="px-5 py-4"><div className="h-3 w-20 rounded bg-[#F1F2F8]" /></td>
+                    <td className="px-5 py-4"><div className="h-5 w-28 rounded-md bg-[#F1F2F8]" /></td>
+                    <td className="px-5 py-4"><div className="h-5 w-14 rounded-md bg-[#F1F2F8]" /></td>
+                    <td className="px-5 py-4"><div className="h-3 w-12 rounded bg-[#F1F2F8]" /></td>
+                    <td className="px-5 py-4"><div className="h-3 w-64 rounded bg-[#F1F2F8]" /></td>
+                    <td className="px-5 py-4"><div className="h-3 w-20 rounded bg-[#F1F2F8]" /></td>
+                    <td className="px-5 py-4"><div className="ml-auto h-7 w-16 rounded-lg bg-[#F1F2F8]" /></td>
+                  </tr>
+                ))
+              ) : tickets.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-5 py-20 text-center">
+                    <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F1F2F8] text-ink-muted">
+                      <FiInbox size={20} />
+                    </span>
+                    <p className="text-[13px] font-semibold text-ink">No tickets found</p>
+                    <p className="mt-1 text-[11px] text-ink-muted">
+                      Try clearing filters or using a broader search term.
+                    </p>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {tickets.map((t) => {
-                  const isHigh = t.priority === 'High';
-                  const isMed = t.priority === 'Medium';
-                  const confidenceDisplay = t.confidence ? `${Math.round(t.confidence * 100)}%` : '94%';
-
+              ) : (
+                tickets.map((ticket) => {
+                  const isHigh = ticket.priority === 'High';
+                  const isMedium = ticket.priority === 'Medium';
                   return (
-                    <tr key={t.id} className="hover:bg-[#FAFBF9] transition-colors">
-                      <td className="py-3.5 px-3 font-mono font-bold text-[#003437]">
-                        {t.id}
+                    <tr
+                      key={ticket.id}
+                      onClick={() => openTicket(ticket)}
+                      className="group cursor-pointer transition-colors hover:bg-[#FAFBFD]"
+                    >
+                      <td className="px-5 py-4 font-mono text-[10.5px] font-semibold text-ink">
+                        {ticket.id}
                       </td>
-                      <td className="py-3.5 px-3 font-semibold text-slate-800">
-                        {t.predicted_category}
-                      </td>
-                      <td className="py-3.5 px-3">
-                        <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                            isHigh
-                              ? 'bg-[#FEF2F2] text-[#DC2626] border border-[#FEE2E2]'
-                              : isMed
-                              ? 'bg-[#FFFBEB] text-[#D97706] border border-[#FEF3C7]'
-                              : 'bg-[#E6F4EF] text-[#019077] border border-[#CDEAE0]'
-                          }`}
-                        >
-                          {t.priority}
+                      <td className="px-5 py-4">
+                        <span className="rounded-lg bg-brand-50 px-2.5 py-1 text-[10px] font-semibold text-brand-700">
+                          {ticket.predicted_category}
                         </span>
                       </td>
-                      <td className="py-3.5 px-3 font-bold text-[#003437]">
-                        {confidenceDisplay}
-                      </td>
-                      <td className="py-3.5 px-3 max-w-sm truncate text-slate-500">
-                        {t.ticket_text}
-                      </td>
-                      <td className="py-3.5 px-3 text-slate-400 whitespace-nowrap">
-                        {new Date(t.created_at).toLocaleDateString()}
-                      </td>
-                      <td className="py-3.5 px-3 text-right">
-                        <button
-                          onClick={() => setSelectedTicket(t)}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-[#FAFBF9] hover:bg-[#E6F4EF] hover:text-[#003437] text-slate-700 text-[11px] font-bold rounded-full border border-[#E2EBE4] transition-colors"
+                      <td className="px-5 py-4">
+                        <span
+                          className={`inline-flex items-center rounded-lg px-2.5 py-1 text-[9.5px] font-semibold ${
+                            isHigh
+                              ? 'bg-rose-50 text-rose-600'
+                              : isMedium
+                                ? 'bg-amber-50 text-amber-600'
+                                : 'bg-mint-50 text-mint-600'
+                          }`}
                         >
-                          <Eye size={12} />
-                          <span>Inspect</span>
-                        </button>
+                          {ticket.priority}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-2">
+                          <span className="w-9 font-mono text-[10.5px] font-medium text-ink-soft">
+                            {ticket.confidence > 0
+                              ? `${Math.round(ticket.confidence * 100)}%`
+                              : '—'}
+                          </span>
+                          {ticket.confidence > 0 && (
+                            <span className="h-1 w-12 overflow-hidden rounded-full bg-[#F1F2F8]">
+                              <span
+                                className="block h-full rounded-full bg-brand-400"
+                                style={{ width: `${Math.min(100, ticket.confidence * 100)}%` }}
+                              />
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="max-w-sm px-5 py-4 text-[11.5px] text-ink-muted">
+                        <span className="line-clamp-1">{truncate(ticket.ticket_text, 90)}</span>
+                      </td>
+                      <td className="whitespace-nowrap px-5 py-4 text-[10.5px] text-ink-muted">
+                        {formatRelativeTime(ticket.created_at)}
+                      </td>
+                      <td className="px-5 py-4 text-right">
+                        <span className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-1.5 text-[9.5px] font-semibold text-ink-muted transition-colors group-hover:border-brand-200 group-hover:text-brand-700">
+                          <FiEye size={11} />
+                          Inspect
+                        </span>
                       </td>
                     </tr>
                   );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
 
-        {/* Pagination */}
-        <div className="flex items-center justify-between pt-5 border-t border-slate-100 text-xs mt-4">
-          <span className="text-slate-400 font-medium">
-            Page {page} of {totalPages} ({total} total tickets)
+        <div className="flex flex-col gap-3 border-t border-line px-5 py-4 text-[10.5px] text-ink-muted sm:flex-row sm:items-center sm:justify-between">
+          <span>
+            Page <b className="font-semibold text-ink">{page}</b> of{' '}
+            <b className="font-semibold text-ink">{totalPages}</b> · {total.toLocaleString()}{' '}
+            matching tickets
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
               disabled={page <= 1}
-              className="p-2 rounded-xl bg-[#FAFBF9] hover:bg-[#E6F4EF] border border-[#E2EBE4] disabled:opacity-40 transition-colors"
+              className="icon-btn h-8 w-8 disabled:opacity-40"
+              aria-label="Previous page"
             >
-              <ChevronLeft size={16} />
+              <FiChevronLeft size={14} />
             </button>
             <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
               disabled={page >= totalPages}
-              className="p-2 rounded-xl bg-[#FAFBF9] hover:bg-[#E6F4EF] border border-[#E2EBE4] disabled:opacity-40 transition-colors"
+              className="icon-btn h-8 w-8 disabled:opacity-40"
+              aria-label="Next page"
             >
-              <ChevronRight size={16} />
+              <FiChevronRight size={14} />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Ticket Detail Modal */}
-      {selectedTicket && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white border border-[#E2EBE4] rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Inquiry Detail</span>
-                <h3 className="text-lg font-bold text-[#003437] font-mono">{selectedTicket.id}</h3>
-              </div>
-              <button
-                onClick={() => setSelectedTicket(null)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
-              >
-                <X size={15} />
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div>
-                <span className="text-slate-400 font-semibold block mb-1">Customer Inquiry:</span>
-                <p className="bg-[#FAFBF9] p-3.5 rounded-2xl text-slate-800 leading-relaxed border border-[#E2EBE4]">
-                  {selectedTicket.ticket_text}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <div className="p-3 bg-[#FAFBF9] rounded-2xl border border-[#E2EBE4]">
-                  <span className="text-slate-400 font-semibold block text-[10px] uppercase">Assigned Department</span>
-                  <span className="font-bold text-[#003437] text-sm mt-0.5 block">{selectedTicket.predicted_category}</span>
+      <AnimatePresence>
+        {selectedTicket && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-[#003437]/45 p-4 backdrop-blur-sm"
+            onClick={() => setSelectedTicket(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 16, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 12, scale: 0.98 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              onClick={(event) => event.stopPropagation()}
+              className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-line bg-white p-6 shadow-2xl"
+            >
+              <div className="mb-5 flex items-start justify-between border-b border-line/70 pb-4">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                    <FiEye size={17} />
+                  </span>
+                  <div>
+                    <span className="text-[9px] font-semibold uppercase tracking-[0.12em] text-ink-muted">
+                      Inquiry detail
+                    </span>
+                    <h3 className="font-mono text-[15px] font-semibold text-ink">
+                      {selectedTicket.id}
+                    </h3>
+                    <div className="mt-0.5 text-[10px] text-ink-muted">
+                      {formatDate(selectedTicket.created_at)} · {selectedTicket.status}
+                    </div>
+                  </div>
                 </div>
-                <div className="p-3 bg-[#FAFBF9] rounded-2xl border border-[#E2EBE4]">
-                  <span className="text-slate-400 font-semibold block text-[10px] uppercase">Service Priority</span>
-                  <span className="font-bold text-[#003437] text-sm mt-0.5 block">{selectedTicket.priority}</span>
+                <button
+                  onClick={() => setSelectedTicket(null)}
+                  className="icon-btn h-8 w-8"
+                  aria-label="Close"
+                >
+                  <FiX size={15} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <span className="mb-1.5 block text-[9px] font-semibold uppercase tracking-[0.12em] text-ink-muted">
+                    Customer inquiry
+                  </span>
+                  <p className="max-h-40 overflow-y-auto rounded-xl border border-line bg-[#FAFBFD] p-4 text-[12px] leading-relaxed text-ink-soft">
+                    {selectedTicket.ticket_text}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl border border-line bg-[#FAFBFD] p-3.5">
+                    <span className="block text-[9px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
+                      Department
+                    </span>
+                    <span className="mt-1 block text-[12px] font-semibold text-ink">
+                      {selectedTicket.predicted_category}
+                    </span>
+                  </div>
+                  <div className="rounded-xl border border-line bg-[#FAFBFD] p-3.5">
+                    <span className="block text-[9px] font-semibold uppercase tracking-[0.1em] text-ink-muted">
+                      Model confidence
+                    </span>
+                    <span className="mt-1 block font-mono text-[12px] font-semibold text-ink">
+                      {selectedTicket.confidence > 0
+                        ? `${(selectedTicket.confidence * 100).toFixed(1)}%`
+                        : 'Not available'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-line bg-white p-4">
+                  <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-ink">
+                    <FiShield size={13} className="text-brand-500" />
+                    Priority rationale
+                  </div>
+                  <p className="text-[11.5px] leading-relaxed text-ink-muted">
+                    {selectedTicket.priority_reason || 'No rationale stored for this ticket.'}
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-line bg-white p-4">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-ink">
+                      Manual priority correction
+                    </span>
+                    <span className="text-[9px] text-ink-muted">Updates stored history</span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <select
+                      value={modalPriority}
+                      onChange={(event) => setModalPriority(event.target.value)}
+                      className="input-field flex-1 cursor-pointer"
+                    >
+                      {PRIORITIES.filter((item) => item !== 'All').map((item) => (
+                        <option key={item} value={item}>
+                          {item} priority
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={savePriority}
+                      disabled={savingPriority || modalPriority === selectedTicket.priority}
+                      className="btn-primary h-10 px-4"
+                    >
+                      {savingPriority ? (
+                        <FiLoader size={13} className="animate-spin" />
+                      ) : (
+                        <FiShield size={13} />
+                      )}
+                      Save
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {selectedTicket.priority_reason && (
-                <div className="p-3 bg-[#FAFBF9] rounded-2xl border border-[#E2EBE4]">
-                  <span className="text-slate-400 font-semibold block text-[10px] uppercase">Triage Rationale</span>
-                  <span className="text-slate-700 mt-0.5 block leading-relaxed">{selectedTicket.priority_reason}</span>
-                </div>
-              )}
-            </div>
-
-            <div className="pt-2">
-              <button
-                onClick={() => setSelectedTicket(null)}
-                className="w-full bg-[#003437] hover:bg-[#014d4e] text-white text-xs font-bold py-2.5 rounded-2xl transition-all shadow-md shadow-[#003437]/15"
-              >
-                Close Inspector
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </motion.div>
+              <div className="mt-5 flex justify-end border-t border-line/70 pt-4">
+                <button onClick={() => setSelectedTicket(null)} className="btn-secondary h-10">
+                  Close inspector
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };

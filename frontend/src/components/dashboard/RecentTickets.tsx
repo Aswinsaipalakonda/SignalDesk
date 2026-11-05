@@ -1,75 +1,114 @@
 import React from 'react';
-import { CreditCard, Headphones, Layers, Sparkles } from 'lucide-react';
+import {
+  FiArrowUpRight,
+  FiCreditCard,
+  FiHeadphones,
+  FiLayers,
+  FiShoppingCart,
+  FiZap,
+} from 'react-icons/fi';
 import { Ticket } from '../../types';
+import { formatRelativeTime, truncate } from '../../lib/format';
 
 interface RecentTicketsProps {
   tickets: Ticket[];
   onViewAllClick: () => void;
+  onSelectTicket?: (ticket: Ticket) => void;
 }
 
-export const RecentTickets: React.FC<RecentTicketsProps> = ({ tickets, onViewAllClick }) => {
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'Billing & Payment':
-        return <CreditCard size={14} className="text-[#019077]" />;
-      case 'Technical Support':
-        return <Headphones size={14} className="text-[#003437]" />;
-      case 'Product Issues':
-        return <Layers size={14} className="text-[#019077]" />;
-      default:
-        return <Sparkles size={14} className="text-[#003437]" />;
-    }
-  };
+const getCategoryIcon = (category: string) => {
+  switch (category) {
+    case 'Billing & Payment':
+      return { icon: <FiCreditCard size={15} />, chip: 'bg-mint-50 text-mint-600' };
+    case 'Technical Support':
+      return { icon: <FiHeadphones size={15} />, chip: 'bg-sky-50 text-sky-600' };
+    case 'Product Issues':
+      return { icon: <FiLayers size={15} />, chip: 'bg-sky-50 text-sky-600' };
+    case 'Order & Delivery':
+      return { icon: <FiShoppingCart size={15} />, chip: 'bg-amber-50 text-amber-600' };
+    default:
+      return { icon: <FiZap size={15} />, chip: 'bg-brand-50 text-brand-600' };
+  }
+};
 
+export const RecentTickets: React.FC<RecentTicketsProps> = ({
+  tickets,
+  onViewAllClick,
+  onSelectTicket,
+}) => {
   return (
-    <div className="bg-white border border-[#E2EBE4] rounded-2xl p-6 shadow-[0_2px_8px_-2px_rgba(0,52,55,0.03)] h-full flex flex-col justify-between">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-bold text-[#003437]">Recent Inquiries</span>
+    <div className="card card-pad flex h-full flex-col">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div>
+          <div className="text-[13px] font-semibold text-ink">Recent inquiries</div>
+          <div className="mt-0.5 text-[11px] text-ink-muted">Latest tickets in the queue</div>
+        </div>
         <button
           onClick={onViewAllClick}
-          className="text-xs font-bold text-[#019077] hover:underline flex items-center gap-1 transition-all"
+          className="group flex h-8 items-center gap-1.5 rounded-lg bg-[#F7F8FC] px-2.5 text-[10px] font-semibold text-ink-soft transition-colors hover:bg-brand-50 hover:text-brand-700"
         >
-          View All →
+          View all
+          <FiArrowUpRight
+            size={12}
+            className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+          />
         </button>
       </div>
 
-      <div className="divide-y divide-[#F1F5F2]">
-        {tickets.slice(0, 4).map((ticket, idx) => {
-          const isHigh = ticket.priority === 'High';
-          const isMed = ticket.priority === 'Medium';
-          const minutesAgo = (idx + 1) * 7 + 1;
-
-          return (
-            <div key={ticket.id} className="py-2.5 flex items-center justify-between gap-3 hover:bg-[#FAFBF9] px-1 rounded-xl transition-colors">
-              <div className="flex items-center gap-2.5 truncate">
-                <div className="w-8 h-8 rounded-xl bg-[#E6F4EF] flex items-center justify-center shrink-0 border border-[#CDEAE0]">
-                  {getCategoryIcon(ticket.predicted_category)}
-                </div>
-                <div className="truncate">
-                  <div className="text-xs font-semibold text-slate-800 truncate max-w-[210px]" title={ticket.ticket_text}>
-                    {ticket.ticket_text}
-                  </div>
-                  <div className="text-[10px] text-slate-400 mt-0.5">
-                    {ticket.predicted_category} • {minutesAgo} min ago
-                  </div>
-                </div>
-              </div>
-
-              <span
-                className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
-                  isHigh
-                    ? 'bg-[#FEF2F2] text-[#DC2626] border border-[#FEE2E2]'
-                    : isMed
-                    ? 'bg-[#FFFBEB] text-[#D97706] border border-[#FEF3C7]'
-                    : 'bg-[#E6F4EF] text-[#019077] border border-[#CDEAE0]'
-                }`}
+      {tickets.length === 0 ? (
+        <div className="flex flex-1 items-center justify-center py-12 text-[12px] text-ink-muted">
+          No tickets match the current filters.
+        </div>
+      ) : (
+        <div className="space-y-1">
+          {tickets.slice(0, 5).map((ticket) => {
+            const meta = getCategoryIcon(ticket.predicted_category);
+            const isHigh = ticket.priority === 'High';
+            const isMedium = ticket.priority === 'Medium';
+            return (
+              <button
+                key={ticket.id}
+                onClick={() => onSelectTicket?.(ticket)}
+                className="group flex w-full items-center gap-3 rounded-xl p-2.5 text-left transition-colors hover:bg-[#F7F8FC]"
               >
-                {ticket.priority}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+                <span
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${meta.chip}`}
+                >
+                  {meta.icon}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[12px] font-medium text-ink" title={ticket.ticket_text}>
+                    {truncate(ticket.ticket_text, 66)}
+                  </span>
+                  <span className="mt-1 flex items-center gap-1.5 text-[10px] text-ink-muted">
+                    <span className="font-medium text-ink-soft">{ticket.predicted_category}</span>
+                    <span className="text-ink-muted/40">·</span>
+                    <span>{formatRelativeTime(ticket.created_at)}</span>
+                    {ticket.confidence > 0 && (
+                      <>
+                        <span className="text-ink-muted/40">·</span>
+                        <span className="font-mono">{Math.round(ticket.confidence * 100)}%</span>
+                      </>
+                    )}
+                  </span>
+                </span>
+
+                <span
+                  className={`shrink-0 rounded-lg px-2 py-1 text-[9px] font-semibold ${
+                    isHigh
+                      ? 'bg-rose-50 text-rose-600'
+                      : isMedium
+                        ? 'bg-amber-50 text-amber-600'
+                        : 'bg-mint-50 text-mint-600'
+                  }`}
+                >
+                  {ticket.priority}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

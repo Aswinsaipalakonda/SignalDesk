@@ -5,6 +5,7 @@ WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
+    NLTK_DATA=/usr/local/share/nltk_data \
     PORT=8000
 
 # Install system dependencies
@@ -18,12 +19,11 @@ COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Download required NLTK data during build
-RUN python -c "import nltk; nltk.download('stopwords'); nltk.download('wordnet'); nltk.download('punkt'); nltk.download('punkt_tab')"
+RUN mkdir -p "$NLTK_DATA" \
+    && python -c "import nltk; nltk.download('stopwords'); nltk.download('wordnet'); nltk.download('punkt'); nltk.download('punkt_tab')"
 
-# Copy backend application, models, and data
+# Copy the backend application (includes models/ and data/)
 COPY backend/ /app/backend/
-COPY models/ /app/models/
-COPY data/ /app/data/
 
 EXPOSE 8000
 
