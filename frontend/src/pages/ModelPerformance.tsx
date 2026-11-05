@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Award, CheckCircle2, Cpu, BarChart2, Check, ArrowUpRight } from 'lucide-react';
+import { Award, CheckCircle2, BarChart2, ArrowUpRight } from 'lucide-react';
 import { api } from '../services/api';
 import { ModelPerformanceData } from '../types';
 
@@ -57,9 +57,9 @@ export const ModelPerformance: React.FC = () => {
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
           <span>SignalDesk</span>
           <span>&gt;</span>
-          <span className="text-slate-700">Performance & SLA</span>
+          <span className="text-[#003437]">Performance & SLA</span>
         </div>
-        <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
+        <h1 className="text-2xl lg:text-3xl font-extrabold text-[#003437] tracking-tight">
           Decision Engine Benchmarks
         </h1>
         <p className="text-xs text-slate-500">
@@ -72,13 +72,13 @@ export const ModelPerformance: React.FC = () => {
         {statCards.map((s) => (
           <div
             key={s.label}
-            className="bg-white border border-slate-200/70 rounded-[28px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.03)]"
+            className="bg-white border border-[#E2EBE4] rounded-3xl p-6 shadow-[0_2px_12px_-2px_rgba(0,52,55,0.04)]"
           >
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{s.label}</span>
-            <div className="text-3xl font-extrabold text-slate-900 mt-1 tracking-tight">
+            <div className="text-3xl font-extrabold text-[#003437] mt-1 tracking-tight">
               {s.val}
             </div>
-            <span className="inline-flex items-center gap-1 mt-3 text-[11px] font-bold text-emerald-800 bg-emerald-100/70 px-2.5 py-0.5 rounded-full">
+            <span className="inline-flex items-center gap-1 mt-3 text-[11px] font-bold text-[#019077] bg-[#E6F4EF] px-2.5 py-0.5 rounded-full">
               {s.isUp && <ArrowUpRight size={12} />}
               {s.change}
             </span>
@@ -88,13 +88,13 @@ export const ModelPerformance: React.FC = () => {
 
       {/* Algorithm Comparison & Decision */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-6 bg-white border border-slate-200/70 rounded-[28px] p-7 shadow-[0_8px_30px_rgb(0,0,0,0.03)] flex flex-col justify-between">
+        <div className="lg:col-span-6 bg-white border border-[#E2EBE4] rounded-3xl p-7 shadow-[0_2px_12px_-2px_rgba(0,52,55,0.04)] flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2.5 mb-5">
-              <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700">
+              <div className="w-8 h-8 rounded-xl bg-[#E6F4EF] flex items-center justify-center text-[#019077]">
                 <Award size={16} />
               </div>
-              <h3 className="text-sm font-bold text-slate-900">Architecture Comparison Benchmark</h3>
+              <h3 className="text-sm font-bold text-[#003437]">Architecture Comparison Benchmark</h3>
             </div>
 
             <div className="overflow-x-auto">
@@ -113,15 +113,15 @@ export const ModelPerformance: React.FC = () => {
                   {Object.entries(data.comparison || {}).map(([name, m]) => {
                     const isSelected = name === data.algorithm;
                     return (
-                      <tr key={name} className={isSelected ? 'bg-slate-50/80 font-bold' : ''}>
-                        <td className="py-3 px-3 font-sans font-bold text-slate-900">{name}</td>
+                      <tr key={name} className={isSelected ? 'bg-[#F2F8F5] font-bold' : ''}>
+                        <td className="py-3 px-3 font-sans font-bold text-[#003437]">{name}</td>
                         <td className="py-3 px-3 text-slate-700">{m.accuracy.toFixed(4)}</td>
                         <td className="py-3 px-3 text-slate-700">{m.precision_macro.toFixed(4)}</td>
                         <td className="py-3 px-3 text-slate-700">{m.recall_macro.toFixed(4)}</td>
-                        <td className="py-3 px-3 text-emerald-600 font-bold">{m.f1_macro.toFixed(4)}</td>
+                        <td className="py-3 px-3 text-[#019077] font-bold">{m.f1_macro.toFixed(4)}</td>
                         <td className="py-3 px-3 font-sans text-right">
                           {isSelected ? (
-                            <span className="text-[10px] font-bold bg-slate-900 text-white px-2.5 py-0.5 rounded-full inline-block shadow-xs">
+                            <span className="text-[10px] font-bold bg-[#003437] text-white px-2.5 py-0.5 rounded-full inline-block shadow-xs">
                               Production Active
                             </span>
                           ) : (
@@ -136,19 +136,19 @@ export const ModelPerformance: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-xs text-slate-600 leading-relaxed">
-            <b className="text-slate-900">Selection Rationale: </b>
+          <div className="bg-[#FAFBF9] border border-[#E2EBE4] rounded-2xl p-4 text-xs text-slate-600 leading-relaxed">
+            <b className="text-[#003437]">Selection Rationale: </b>
             {data.selected_reason}
           </div>
         </div>
 
         {/* Confusion Matrix Card */}
-        <div className="lg:col-span-6 bg-white border border-slate-200/70 rounded-[28px] p-7 shadow-[0_8px_30px_rgb(0,0,0,0.03)]">
+        <div className="lg:col-span-6 bg-white border border-[#E2EBE4] rounded-3xl p-7 shadow-[0_2px_12px_-2px_rgba(0,52,55,0.04)]">
           <div className="flex items-center gap-2.5 mb-5">
-            <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700">
+            <div className="w-8 h-8 rounded-xl bg-[#E6F4EF] flex items-center justify-center text-[#019077]">
               <BarChart2 size={16} />
             </div>
-            <h3 className="text-sm font-bold text-slate-900">Classification Correlation Matrix</h3>
+            <h3 className="text-sm font-bold text-[#003437]">Classification Correlation Matrix</h3>
           </div>
 
           <div className="overflow-x-auto">
@@ -176,9 +176,9 @@ export const ModelPerformance: React.FC = () => {
                           key={cIdx}
                           className={`p-2 border border-white rounded-lg font-bold ${
                             isDiag
-                              ? 'bg-slate-900 text-white'
+                              ? 'bg-[#003437] text-white'
                               : val > 20
-                              ? 'bg-emerald-100 text-emerald-900'
+                              ? 'bg-[#E6F4EF] text-[#003437]'
                               : val > 0
                               ? 'bg-slate-100 text-slate-700'
                               : 'text-slate-300'
@@ -200,8 +200,8 @@ export const ModelPerformance: React.FC = () => {
       </div>
 
       {/* Per-Class Report Table */}
-      <div className="bg-white border border-slate-200/70 rounded-[28px] p-7 shadow-[0_8px_30px_rgb(0,0,0,0.03)]">
-        <h3 className="text-sm font-bold text-slate-900 mb-4">Department-Specific Precision & Recall</h3>
+      <div className="bg-white border border-[#E2EBE4] rounded-3xl p-7 shadow-[0_2px_12px_-2px_rgba(0,52,55,0.04)]">
+        <h3 className="text-sm font-bold text-[#003437] mb-4">Department-Specific Precision & Recall</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-mono">
             <thead className="border-b border-slate-100 text-slate-400 font-medium font-sans">
@@ -217,11 +217,11 @@ export const ModelPerformance: React.FC = () => {
               {Object.entries(data.classification_report || {}).map(([catName, scores]: [string, any]) => {
                 if (typeof scores !== 'object' || !scores['f1-score']) return null;
                 return (
-                  <tr key={catName} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3 px-4 font-bold text-slate-900">{catName}</td>
+                  <tr key={catName} className="hover:bg-[#FAFBF9] transition-colors">
+                    <td className="py-3 px-4 font-bold text-[#003437]">{catName}</td>
                     <td className="py-3 px-4 font-mono text-slate-700">{scores.precision.toFixed(4)}</td>
                     <td className="py-3 px-4 font-mono text-slate-700">{scores.recall.toFixed(4)}</td>
-                    <td className="py-3 px-4 font-mono font-bold text-emerald-600">
+                    <td className="py-3 px-4 font-mono font-bold text-[#019077]">
                       {scores['f1-score'].toFixed(4)}
                     </td>
                     <td className="py-3 px-4 font-mono text-slate-400 text-right">{scores.support}</td>

@@ -8,8 +8,8 @@ import {
   Users,
   HelpCircle,
   LogOut,
-  ChevronDown,
-  ChevronsUpDown
+  ChevronsUpDown,
+  CheckCircle2
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -19,10 +19,10 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) => {
   const mainNav = [
-    { id: 'overview', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'analyze', label: 'Triage & Classify', icon: Sparkles, count: 4 },
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+    { id: 'analyze', label: 'Analyze Ticket', icon: Sparkles, count: 4 },
     { id: 'explorer', label: 'Ticket Explorer', icon: Layers, count: 12 },
-    { id: 'performance', label: 'Performance & SLA', icon: BarChart3 },
+    { id: 'performance', label: 'Model Performance', icon: BarChart3 },
   ];
 
   const othersNav = [
@@ -33,23 +33,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) =
   ];
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200/70 flex flex-col justify-between h-screen sticky top-0 px-4 py-5 shadow-xs z-20 select-none">
+    <aside className="w-64 bg-white border-r border-[#E8EFE9] flex flex-col justify-between h-screen sticky top-0 px-4 py-5 shadow-xs z-20 select-none">
       <div className="space-y-6">
-        {/* Workspace Brand Switcher (matching reference design) */}
-        <div className="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 transition-colors cursor-pointer border border-transparent hover:border-slate-200">
+        {/* Workspace Brand Switcher using assets/logo.png */}
+        <div className="flex items-center justify-between p-2 rounded-2xl hover:bg-[#F4F8F5] transition-colors cursor-pointer border border-transparent hover:border-[#DCE8DF]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-slate-900/10">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m3 11 18-5v12L3 14v-3z"/>
-                <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>
-              </svg>
+            <div className="w-10 h-10 rounded-xl bg-[#FAFBF9] border border-[#E2EBE4] flex items-center justify-center p-1.5 shadow-xs">
+              <img src="/assets/logo.png" alt="SignalDesk Logo" className="w-full h-full object-contain" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-sm font-extrabold text-slate-900 tracking-tight">SignalDesk</span>
-                <span className="text-[10px] font-bold bg-emerald-100/70 text-emerald-800 px-1.5 py-0.2 rounded-md">Pro</span>
+                <span className="text-sm font-extrabold text-[#003437] tracking-tight">SignalDesk</span>
+                <span className="text-[10px] font-bold bg-[#E6F4EF] text-[#019077] px-1.5 py-0.2 rounded-md">Pro</span>
               </div>
-              <div className="text-[11px] font-medium text-slate-400">Enterprise AI Ops</div>
+              <div className="text-[11px] font-medium text-slate-400">AI Ticket Intelligence</div>
             </div>
           </div>
           <ChevronsUpDown size={15} className="text-slate-400" />
@@ -70,8 +67,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) =
                   onClick={() => onPageChange(item.id)}
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all duration-200 ${
                     isActive
-                      ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20'
-                      : 'text-slate-500 hover:bg-slate-100/70 hover:text-slate-900'
+                      ? 'bg-[#003437] text-white shadow-md shadow-[#003437]/20'
+                      : 'text-slate-600 hover:bg-[#F4F8F5] hover:text-[#003437]'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -83,7 +80,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) =
                       className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
                         isActive
                           ? 'bg-white/20 text-white'
-                          : 'bg-amber-500/10 text-amber-600'
+                          : 'bg-[#E6F4EF] text-[#019077]'
                       }`}
                     >
                       {item.count}
@@ -100,24 +97,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) =
           <div className="px-3 mb-2 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
             Others
           </div>
-          <nav className="space-y-1.5">
+          <nav className="space-y-1">
             {othersNav.map((item) => {
               const Icon = item.icon;
               return (
                 <button
                   key={item.id}
-                  onClick={() => {
-                    if (item.id === 'help') onPageChange('analyze');
-                    if (item.id === 'team' || item.id === 'settings') onPageChange('explorer');
-                  }}
-                  className="w-full flex items-center justify-between px-3.5 py-2 rounded-2xl text-xs font-semibold text-slate-500 hover:bg-slate-100/70 hover:text-slate-900 transition-colors"
+                  className="w-full flex items-center justify-between px-3.5 py-2 rounded-2xl text-xs font-semibold text-slate-500 hover:bg-[#F4F8F5] hover:text-[#003437] transition-all"
                 >
                   <div className="flex items-center gap-3">
-                    <Icon size={16} strokeWidth={1.75} className="text-slate-400" />
+                    <Icon size={15} strokeWidth={1.75} className="text-slate-400" />
                     <span>{item.label}</span>
                   </div>
                   {item.count && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600">
                       {item.count}
                     </span>
                   )}
@@ -128,21 +121,32 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onPageChange }) =
         </div>
       </div>
 
-      {/* Bottom User Card (matching reference design) */}
-      <div className="pt-4 border-t border-slate-100 flex items-center justify-between px-2">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-bold text-xs flex items-center justify-center shadow-xs">
-            AL
+      {/* Bottom Status Card (matching original design) */}
+      <div className="space-y-3 pt-4 border-t border-[#E8EFE9]">
+        <div className="p-3.5 rounded-2xl bg-[#F7FAF8] border border-[#E2EBE4] space-y-1.5">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#019077]"></span>
+            </span>
+            <span className="text-[11px] font-bold text-[#003437]">Triage Engine Active</span>
           </div>
-          <div>
-            <div className="text-xs font-bold text-slate-900">Alex Morgan</div>
-            <div className="text-[10px] text-slate-400 truncate max-w-[110px]">lead@signaldesk.com</div>
-          </div>
+          <p className="text-[10px] text-slate-500 leading-tight">
+            Classifying inquiries with sub-20ms latency and zero data leakage.
+          </p>
         </div>
-        <div className="text-slate-400 hover:text-slate-600 cursor-pointer p-1">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
-          </svg>
+
+        {/* User Profile Card */}
+        <div className="flex items-center justify-between p-2 rounded-2xl bg-white hover:bg-[#F4F8F5] transition-colors cursor-pointer border border-[#E8EFE9]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-[#003437] text-white flex items-center justify-center font-bold text-xs">
+              SD
+            </div>
+            <div className="truncate">
+              <div className="text-xs font-bold text-[#003437] truncate">Support Lead</div>
+              <div className="text-[10px] text-slate-400 truncate">lead@signaldesk.io</div>
+            </div>
+          </div>
         </div>
       </div>
     </aside>

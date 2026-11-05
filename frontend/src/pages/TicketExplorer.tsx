@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Download, Filter, ChevronLeft, ChevronRight, Eye, X, Headphones, CreditCard, UserCheck, Package, HelpCircle } from 'lucide-react';
+import { Search, Download, Filter, ChevronLeft, ChevronRight, Eye, X } from 'lucide-react';
 import { api } from '../services/api';
 import { Ticket } from '../types';
 
@@ -87,9 +87,9 @@ export const TicketExplorer: React.FC = () => {
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
             <span>SignalDesk</span>
             <span>&gt;</span>
-            <span className="text-slate-700">Ticket Explorer</span>
+            <span className="text-[#003437]">Ticket Explorer</span>
           </div>
-          <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-2xl lg:text-3xl font-extrabold text-[#003437] tracking-tight">
             Historical Inquiry Archive
           </h1>
           <p className="text-xs text-slate-500">
@@ -98,7 +98,7 @@ export const TicketExplorer: React.FC = () => {
         </div>
         <button
           onClick={exportCsv}
-          className="inline-flex items-center gap-2 bg-slate-900 hover:bg-black text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-md shadow-slate-900/10 transition-all self-start md:self-auto active:scale-95"
+          className="inline-flex items-center gap-2 bg-[#003437] hover:bg-[#014d4e] text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-md shadow-[#003437]/15 transition-all self-start md:self-auto active:scale-95"
         >
           <Download size={14} />
           <span>Export Archive CSV</span>
@@ -106,7 +106,7 @@ export const TicketExplorer: React.FC = () => {
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white border border-slate-200/70 rounded-[28px] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.03)]">
+      <div className="bg-white border border-[#E2EBE4] rounded-2xl p-5 shadow-[0_2px_12px_-2px_rgba(0,52,55,0.04)]">
         <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 md:grid-cols-12 gap-3.5">
           <div className="md:col-span-6 relative">
             <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -115,7 +115,7 @@ export const TicketExplorer: React.FC = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by keywords, subject, or ticket text..."
-              className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200/80 focus:border-slate-900 rounded-2xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-all"
+              className="w-full pl-9 pr-4 py-2.5 bg-[#FAFBF9] border border-[#E2EBE4] focus:border-[#019077] rounded-2xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#019077]/10 transition-all"
             />
           </div>
 
@@ -126,7 +126,7 @@ export const TicketExplorer: React.FC = () => {
                 setCategory(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 text-xs font-semibold text-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 cursor-pointer"
+              className="w-full px-3.5 py-2.5 bg-[#FAFBF9] border border-[#E2EBE4] text-xs font-semibold text-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#019077]/10 cursor-pointer"
             >
               {categories.map((c) => (
                 <option key={c} value={c}>
@@ -143,7 +143,7 @@ export const TicketExplorer: React.FC = () => {
                 setPriority(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 text-xs font-semibold text-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 cursor-pointer"
+              className="w-full px-3.5 py-2.5 bg-[#FAFBF9] border border-[#E2EBE4] text-xs font-semibold text-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#019077]/10 cursor-pointer"
             >
               {priorities.map((p) => (
                 <option key={p} value={p}>
@@ -156,7 +156,7 @@ export const TicketExplorer: React.FC = () => {
           <div className="md:col-span-1">
             <button
               type="submit"
-              className="w-full h-full bg-slate-100 hover:bg-slate-200/80 text-slate-800 text-xs font-bold py-2.5 rounded-2xl transition-colors flex items-center justify-center gap-1"
+              className="w-full h-full bg-[#E6F4EF] hover:bg-[#d5eee5] text-[#003437] text-xs font-bold py-2.5 rounded-2xl transition-colors flex items-center justify-center gap-1"
             >
               <Filter size={13} />
               <span>Apply</span>
@@ -166,15 +166,15 @@ export const TicketExplorer: React.FC = () => {
       </div>
 
       {/* Table Card */}
-      <div className="bg-white border border-slate-200/70 rounded-[28px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.03)]">
+      <div className="bg-white border border-[#E2EBE4] rounded-3xl p-6 shadow-[0_2px_12px_-2px_rgba(0,52,55,0.04)]">
         {loading ? (
           <div className="py-20 text-center">
-            <div className="w-7 h-7 border-3 border-slate-900 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+            <div className="w-7 h-7 border-3 border-[#003437] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
             <p className="text-xs text-slate-400">Loading inquiries...</p>
           </div>
         ) : tickets.length === 0 ? (
           <div className="py-20 text-center text-slate-400">
-            <p className="text-sm font-bold text-slate-700">No records found</p>
+            <p className="text-sm font-bold text-[#003437]">No records found</p>
             <p className="text-xs text-slate-400 mt-1">Try relaxing your search terms or filters.</p>
           </div>
         ) : (
@@ -198,9 +198,9 @@ export const TicketExplorer: React.FC = () => {
                   const confidenceDisplay = t.confidence ? `${Math.round(t.confidence * 100)}%` : '94%';
 
                   return (
-                    <tr key={t.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="py-3.5 px-3 font-mono font-bold text-slate-900">
-                        TK-{98420 + t.id}
+                    <tr key={t.id} className="hover:bg-[#FAFBF9] transition-colors">
+                      <td className="py-3.5 px-3 font-mono font-bold text-[#003437]">
+                        {t.id}
                       </td>
                       <td className="py-3.5 px-3 font-semibold text-slate-800">
                         {t.predicted_category}
@@ -209,16 +209,16 @@ export const TicketExplorer: React.FC = () => {
                         <span
                           className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                             isHigh
-                              ? 'bg-red-50 text-red-600 border border-red-200/60'
+                              ? 'bg-[#FEF2F2] text-[#DC2626] border border-[#FEE2E2]'
                               : isMed
-                              ? 'bg-amber-50 text-amber-700 border border-amber-200/60'
-                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
+                              ? 'bg-[#FFFBEB] text-[#D97706] border border-[#FEF3C7]'
+                              : 'bg-[#E6F4EF] text-[#019077] border border-[#CDEAE0]'
                           }`}
                         >
                           {t.priority}
                         </span>
                       </td>
-                      <td className="py-3.5 px-3 font-bold text-slate-700">
+                      <td className="py-3.5 px-3 font-bold text-[#003437]">
                         {confidenceDisplay}
                       </td>
                       <td className="py-3.5 px-3 max-w-sm truncate text-slate-500">
@@ -230,7 +230,7 @@ export const TicketExplorer: React.FC = () => {
                       <td className="py-3.5 px-3 text-right">
                         <button
                           onClick={() => setSelectedTicket(t)}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-slate-200/80 text-slate-700 text-[11px] font-bold rounded-full transition-colors"
+                          className="inline-flex items-center gap-1 px-3 py-1 bg-[#FAFBF9] hover:bg-[#E6F4EF] hover:text-[#003437] text-slate-700 text-[11px] font-bold rounded-full border border-[#E2EBE4] transition-colors"
                         >
                           <Eye size={12} />
                           <span>Inspect</span>
@@ -253,14 +253,14 @@ export const TicketExplorer: React.FC = () => {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 disabled:opacity-40 transition-colors"
+              className="p-2 rounded-xl bg-[#FAFBF9] hover:bg-[#E6F4EF] border border-[#E2EBE4] disabled:opacity-40 transition-colors"
             >
               <ChevronLeft size={16} />
             </button>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page >= totalPages}
-              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 disabled:opacity-40 transition-colors"
+              className="p-2 rounded-xl bg-[#FAFBF9] hover:bg-[#E6F4EF] border border-[#E2EBE4] disabled:opacity-40 transition-colors"
             >
               <ChevronRight size={16} />
             </button>
@@ -271,11 +271,11 @@ export const TicketExplorer: React.FC = () => {
       {/* Ticket Detail Modal */}
       {selectedTicket && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white border border-slate-200 rounded-[28px] max-w-lg w-full p-6 shadow-2xl space-y-4">
+          <div className="bg-white border border-[#E2EBE4] rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Inquiry Detail</span>
-                <h3 className="text-lg font-bold text-slate-900 font-mono">TK-{98420 + selectedTicket.id}</h3>
+                <h3 className="text-lg font-bold text-[#003437] font-mono">{selectedTicket.id}</h3>
               </div>
               <button
                 onClick={() => setSelectedTicket(null)}
@@ -288,24 +288,24 @@ export const TicketExplorer: React.FC = () => {
             <div className="space-y-3 text-xs">
               <div>
                 <span className="text-slate-400 font-semibold block mb-1">Customer Inquiry:</span>
-                <p className="bg-slate-50 p-3.5 rounded-2xl text-slate-800 leading-relaxed border border-slate-100">
+                <p className="bg-[#FAFBF9] p-3.5 rounded-2xl text-slate-800 leading-relaxed border border-[#E2EBE4]">
                   {selectedTicket.ticket_text}
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-3 pt-2">
-                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="p-3 bg-[#FAFBF9] rounded-2xl border border-[#E2EBE4]">
                   <span className="text-slate-400 font-semibold block text-[10px] uppercase">Assigned Department</span>
-                  <span className="font-bold text-slate-900 text-sm mt-0.5 block">{selectedTicket.predicted_category}</span>
+                  <span className="font-bold text-[#003437] text-sm mt-0.5 block">{selectedTicket.predicted_category}</span>
                 </div>
-                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="p-3 bg-[#FAFBF9] rounded-2xl border border-[#E2EBE4]">
                   <span className="text-slate-400 font-semibold block text-[10px] uppercase">Service Priority</span>
-                  <span className="font-bold text-slate-900 text-sm mt-0.5 block">{selectedTicket.priority}</span>
+                  <span className="font-bold text-[#003437] text-sm mt-0.5 block">{selectedTicket.priority}</span>
                 </div>
               </div>
 
               {selectedTicket.priority_reason && (
-                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="p-3 bg-[#FAFBF9] rounded-2xl border border-[#E2EBE4]">
                   <span className="text-slate-400 font-semibold block text-[10px] uppercase">Triage Rationale</span>
                   <span className="text-slate-700 mt-0.5 block leading-relaxed">{selectedTicket.priority_reason}</span>
                 </div>
@@ -315,7 +315,7 @@ export const TicketExplorer: React.FC = () => {
             <div className="pt-2">
               <button
                 onClick={() => setSelectedTicket(null)}
-                className="w-full bg-slate-900 hover:bg-black text-white text-xs font-bold py-2.5 rounded-2xl transition-all"
+                className="w-full bg-[#003437] hover:bg-[#014d4e] text-white text-xs font-bold py-2.5 rounded-2xl transition-all shadow-md shadow-[#003437]/15"
               >
                 Close Inspector
               </button>

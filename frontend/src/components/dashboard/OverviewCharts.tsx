@@ -218,3 +218,4 @@ export const OverviewCharts: React.FC<OverviewChartsProps> = ({ totalTickets, ac
     </div>
   );
 };
+

@@ -75,9 +75,9 @@ export const AnalyzeTicket: React.FC<AnalyzeTicketProps> = ({ onTicketClassified
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
           <span>SignalDesk</span>
           <span>&gt;</span>
-          <span className="text-slate-700">Triage & Classify</span>
+          <span className="text-[#003437]">Triage & Classify</span>
         </div>
-        <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight">
+        <h1 className="text-2xl lg:text-3xl font-extrabold text-[#003437] tracking-tight">
           Automated Ticket Triage
         </h1>
         <p className="text-xs text-slate-500">
@@ -87,10 +87,10 @@ export const AnalyzeTicket: React.FC<AnalyzeTicketProps> = ({ onTicketClassified
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Input Card */}
-        <div className="lg:col-span-6 bg-white border border-slate-200/70 rounded-[28px] p-7 shadow-[0_8px_30px_rgb(0,0,0,0.03)] flex flex-col justify-between">
+        <div className="lg:col-span-6 bg-white border border-[#E2EBE4] rounded-3xl p-7 shadow-[0_2px_12px_-2px_rgba(0,52,55,0.04)] flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
-              <Lightbulb size={14} className="text-amber-500" />
+              <Lightbulb size={14} className="text-[#019077]" />
               <span>Sample Inquiries</span>
             </div>
             <div className="flex flex-wrap gap-2 mb-5">
@@ -98,14 +98,14 @@ export const AnalyzeTicket: React.FC<AnalyzeTicketProps> = ({ onTicketClassified
                 <button
                   key={ex.label}
                   onClick={() => setInputText(ex.text)}
-                  className="px-3 py-1.5 bg-slate-100/80 hover:bg-slate-200/80 text-xs font-semibold rounded-full text-slate-700 transition-colors"
+                  className="px-3 py-1.5 bg-[#FAFBF9] hover:bg-[#E6F4EF] hover:text-[#003437] border border-[#E2EBE4] text-xs font-semibold rounded-full text-slate-700 transition-colors"
                 >
                   {ex.label}
                 </button>
               ))}
             </div>
 
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-[#003437] mb-2">
               Customer Message
             </label>
             <textarea
@@ -113,7 +113,7 @@ export const AnalyzeTicket: React.FC<AnalyzeTicketProps> = ({ onTicketClassified
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder="Paste customer support inquiry or complaint here..."
-              className="w-full bg-slate-50/70 hover:bg-slate-50 focus:bg-white border border-slate-200/80 focus:border-slate-900 rounded-2xl p-4 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition-all resize-none leading-relaxed"
+              className="w-full bg-[#FAFBF9] hover:bg-white focus:bg-white border border-[#E2EBE4] focus:border-[#019077] rounded-2xl p-4 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#019077]/10 transition-all resize-none leading-relaxed"
             />
             <div className="flex justify-between items-center text-[11px] text-slate-400 mt-2">
               <span>Understands context, negations, and service urgency</span>
@@ -131,7 +131,7 @@ export const AnalyzeTicket: React.FC<AnalyzeTicketProps> = ({ onTicketClassified
           <button
             onClick={handleClassify}
             disabled={loading}
-            className="w-full mt-6 bg-slate-900 hover:bg-black disabled:bg-slate-300 text-white font-bold text-xs py-3.5 rounded-2xl transition-all shadow-md shadow-slate-900/15 flex items-center justify-center gap-2 active:scale-98"
+            className="w-full mt-6 bg-[#003437] hover:bg-[#014d4e] disabled:bg-slate-300 text-white font-bold text-xs py-3.5 rounded-2xl transition-all shadow-md shadow-[#003437]/20 flex items-center justify-center gap-2 active:scale-98"
           >
             {loading ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -145,24 +145,24 @@ export const AnalyzeTicket: React.FC<AnalyzeTicketProps> = ({ onTicketClassified
         </div>
 
         {/* Prediction Results Column */}
-        <div className="lg:col-span-6 bg-white border border-slate-200/70 rounded-[28px] p-7 shadow-[0_8px_30px_rgb(0,0,0,0.03)] flex flex-col justify-between">
+        <div className="lg:col-span-6 bg-white border border-[#E2EBE4] rounded-3xl p-7 shadow-[0_2px_12px_-2px_rgba(0,52,55,0.04)] flex flex-col justify-between">
           <div>
-            <div className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
-              <Sparkles size={16} className="text-emerald-600" />
+            <div className="text-sm font-bold text-[#003437] mb-4 flex items-center gap-2">
+              <Sparkles size={16} className="text-[#019077]" />
               <span>Triage Assessment</span>
             </div>
 
             {result ? (
               <div className="space-y-4">
                 {/* Result Hero Card */}
-                <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5">
+                <div className="bg-[#FAFBF9] border border-[#E2EBE4] rounded-2xl p-5">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Assigned Department</span>
-                    <span className="text-[11px] font-extrabold text-emerald-800 bg-emerald-100/70 px-2.5 py-0.5 rounded-full">
+                    <span className="text-[11px] font-extrabold text-[#019077] bg-[#E6F4EF] px-2.5 py-0.5 rounded-full border border-[#CDEAE0]">
                       Confidence: {result.confidence_percentage}
                     </span>
                   </div>
-                  <div className="text-2xl font-black text-slate-900 mb-3 tracking-tight">
+                  <div className="text-2xl font-black text-[#003437] mb-3 tracking-tight">
                     {result.predicted_category}
                   </div>
                   <div className="flex items-center gap-2">
@@ -170,10 +170,10 @@ export const AnalyzeTicket: React.FC<AnalyzeTicketProps> = ({ onTicketClassified
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-bold ${
                         isHigh
-                          ? 'bg-red-50 text-red-600 border border-red-200/60'
+                          ? 'bg-[#FEF2F2] text-[#DC2626] border border-[#FEE2E2]'
                           : isMed
-                          ? 'bg-amber-50 text-amber-700 border border-amber-200/60'
-                          : 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
+                          ? 'bg-[#FFFBEB] text-[#D97706] border border-[#FEF3C7]'
+                          : 'bg-[#E6F4EF] text-[#019077] border border-[#CDEAE0]'
                       }`}
                     >
                       {result.priority} Priority
@@ -182,15 +182,15 @@ export const AnalyzeTicket: React.FC<AnalyzeTicketProps> = ({ onTicketClassified
                 </div>
 
                 {/* Priority Rule Rationale */}
-                <div className="bg-white border-l-4 border-l-slate-900 border border-slate-200/80 rounded-r-2xl p-4 shadow-2xs">
-                  <div className="text-xs font-bold text-slate-900 mb-1 flex items-center gap-1.5">
-                    <ShieldAlert size={14} className="text-emerald-600" />
+                <div className="bg-white border-l-4 border-l-[#003437] border border-[#E2EBE4] rounded-r-2xl p-4 shadow-2xs">
+                  <div className="text-xs font-bold text-[#003437] mb-1 flex items-center gap-1.5">
+                    <ShieldAlert size={14} className="text-[#019077]" />
                     <span>Operational Rationale</span>
                   </div>
                   <div className="text-xs text-slate-600 leading-relaxed">
                     {result.priority_reason}{' '}
                     <span className="text-slate-400">
-                      (Matched pattern: <code className="bg-slate-100 px-1.5 py-0.5 rounded text-[11px] font-mono text-slate-700">{result.matched_pattern}</code>)
+                      (Matched pattern: <code className="bg-slate-100 px-1.5 py-0.5 rounded text-[11px] font-mono text-[#003437]">{result.matched_pattern}</code>)
                     </span>
                   </div>
                 </div>
@@ -198,7 +198,7 @@ export const AnalyzeTicket: React.FC<AnalyzeTicketProps> = ({ onTicketClassified
                 {/* Probabilities Breakdown */}
                 {result.probabilities && (
                   <div className="pt-2">
-                    <div className="text-xs font-bold text-slate-800 mb-2.5">
+                    <div className="text-xs font-bold text-[#003437] mb-2.5">
                       Routing Probability Distribution
                     </div>
                     <div className="space-y-2.5">
@@ -210,7 +210,7 @@ export const AnalyzeTicket: React.FC<AnalyzeTicketProps> = ({ onTicketClassified
                           return (
                             <div key={cat}>
                               <div className="flex justify-between text-xs mb-1">
-                                <span className={isWinner ? 'font-bold text-slate-900' : 'text-slate-400'}>
+                                <span className={isWinner ? 'font-bold text-[#003437]' : 'text-slate-400'}>
                                   {cat}
                                 </span>
                                 <span className="font-semibold text-slate-800">{pct}%</span>
@@ -218,7 +218,7 @@ export const AnalyzeTicket: React.FC<AnalyzeTicketProps> = ({ onTicketClassified
                               <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                                 <div
                                   className={`h-full rounded-full transition-all duration-500 ${
-                                    isWinner ? 'bg-slate-900' : 'bg-slate-300'
+                                    isWinner ? 'bg-[#003437]' : 'bg-slate-300'
                                   }`}
                                   style={{ width: `${pct}%` }}
                                 ></div>
@@ -233,7 +233,7 @@ export const AnalyzeTicket: React.FC<AnalyzeTicketProps> = ({ onTicketClassified
             ) : (
               <div className="py-20 text-center text-slate-400">
                 <Sparkles size={36} className="mx-auto text-slate-300 mb-3" />
-                <p className="text-xs font-bold text-slate-700">Ready for Live Analysis</p>
+                <p className="text-xs font-bold text-[#003437]">Ready for Live Analysis</p>
                 <p className="text-xs text-slate-400 max-w-xs mx-auto mt-1">
                   Type or select a customer inquiry to test real-time classification and transparent priority routing.
                 </p>
@@ -243,8 +243,8 @@ export const AnalyzeTicket: React.FC<AnalyzeTicketProps> = ({ onTicketClassified
 
           {result && (
             <div className="flex justify-between items-center text-[11px] text-slate-400 pt-4 border-t border-slate-100 mt-4">
-              <span>Case Record: <b className="font-mono text-slate-700">{result.ticket_id}</b></span>
-              <span className="flex items-center gap-1 font-semibold text-slate-600">
+              <span>Case Record: <b className="font-mono text-[#003437]">{result.ticket_id}</b></span>
+              <span className="flex items-center gap-1 font-semibold text-[#019077]">
                 <Clock size={12} />
                 Triage speed: {result.latency_ms} ms
               </span>

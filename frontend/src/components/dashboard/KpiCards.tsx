@@ -7,20 +7,20 @@ interface KpiCardsProps {
 }
 
 export const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
-  const getIcon = (name: string, color: string) => {
+  const getIcon = (name: string) => {
     switch (name) {
       case 'ticket':
-        return <Ticket size={17} strokeWidth={2} style={{ color }} />;
+        return <Ticket size={17} strokeWidth={2} className="text-[#019077]" />;
       case 'credit-card':
-        return <CreditCard size={17} strokeWidth={2} style={{ color }} />;
+        return <CreditCard size={17} strokeWidth={2} className="text-[#003437]" />;
       case 'headphones':
-        return <Headphones size={17} strokeWidth={2} style={{ color }} />;
+        return <Headphones size={17} strokeWidth={2} className="text-[#019077]" />;
       case 'alert-triangle':
-        return <AlertTriangle size={17} strokeWidth={2} style={{ color }} />;
+        return <AlertTriangle size={17} strokeWidth={2} className="text-[#DC2626]" />;
       case 'target':
-        return <Target size={17} strokeWidth={2} style={{ color }} />;
+        return <Target size={17} strokeWidth={2} className="text-[#019077]" />;
       default:
-        return <Ticket size={17} strokeWidth={2} style={{ color }} />;
+        return <Ticket size={17} strokeWidth={2} className="text-[#019077]" />;
     }
   };
 
@@ -37,24 +37,24 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
       {metrics.map((m, idx) => (
         <div
           key={m.title}
-          className="bg-white border border-[#EAEFEA] hover:border-[#D1E0D3] rounded-2xl p-4.5 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.04)] hover:shadow-[0_6px_20px_-4px_rgba(14,94,68,0.08)] transition-all duration-200 flex flex-col justify-between group"
+          className="bg-white border border-[#E2EBE4] hover:border-[#019077]/40 rounded-2xl p-4.5 shadow-[0_2px_8px_-2px_rgba(0,52,55,0.04)] hover:shadow-[0_6px_20px_-4px_rgba(0,52,55,0.08)] transition-all duration-200 flex flex-col justify-between group"
         >
           {/* Header */}
-          <div className="flex items-center gap-2 text-[#64748B] text-xs font-semibold mb-2">
-            <div className="w-7 h-7 rounded-lg bg-[#F8FAF8] border border-[#EAEFEA] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-              {getIcon(m.icon, m.color)}
+          <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold mb-2">
+            <div className="w-7 h-7 rounded-lg bg-[#FAFBF9] border border-[#E2EBE4] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              {getIcon(m.icon)}
             </div>
             <span className="truncate">{m.title}</span>
           </div>
 
           {/* Value */}
-          <div className="text-2xl lg:text-[28px] font-extrabold text-[#1A202C] tracking-tight mb-2.5">
+          <div className="text-2xl lg:text-[28px] font-extrabold text-[#003437] tracking-tight mb-2.5">
             {m.value}
           </div>
 
           {/* Footer Trend & Sparkline */}
-          <div className="flex items-center justify-between pt-1 border-t border-[#F8FAF8]">
-            <span className="inline-flex items-center gap-0.5 text-[11px] font-bold px-1.5 py-0.5 rounded-md bg-[#EBF5F0] text-[#0E5E44]">
+          <div className="flex items-center justify-between pt-1 border-t border-[#F4F8F5]">
+            <span className="inline-flex items-center gap-0.5 text-[11px] font-bold px-1.5 py-0.5 rounded-md bg-[#E6F4EF] text-[#019077]">
               ↑ {m.trend}
             </span>
 
@@ -62,7 +62,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
             <svg width="72" height="20" viewBox="0 0 90 22" fill="none" className="overflow-visible opacity-85 group-hover:opacity-100 transition-opacity">
               <path
                 d={sparklineD[idx % sparklineD.length]}
-                stroke={m.color}
+                stroke={m.title.includes('High') ? '#DC2626' : '#019077'}
                 strokeWidth="2.2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -70,7 +70,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
             </svg>
 
             {m.title === 'Model Accuracy' && (
-              <span title="Test evaluation accuracy on 2,385 held-out records" className="text-slate-300 hover:text-slate-500 cursor-pointer">
+              <span title="Test evaluation accuracy on held-out records" className="text-slate-300 hover:text-slate-500 cursor-pointer">
                 <Info size={13} />
               </span>
             )}

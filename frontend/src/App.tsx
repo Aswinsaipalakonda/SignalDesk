@@ -45,7 +45,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAF8]">
+    <div className="flex min-h-screen bg-[#FAFBF9]">
       <Sidebar currentPage={currentPage} onPageChange={(p) => setCurrentPage(p)} />
       <div className="flex-1 flex flex-col min-w-0">
         <Topbar
