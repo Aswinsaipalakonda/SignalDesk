@@ -1,7 +1,7 @@
 """Database Connection and Session Management for SignalDesk Backend.
 
-Supports Neon PostgreSQL and SQLite with automatic pooling, table creation,
-and initial data seeding from real customer inquiries.
+Connects to Neon Cloud PostgreSQL via SQLAlchemy 2.0 and psycopg v3,
+with connection pooling, automatic schema creation, and seeding.
 """
 
 from typing import Generator
@@ -15,16 +15,19 @@ from backend.app.database.models import Base, Ticket
 
 def get_engine():
     """Create SQLAlchemy engine with appropriate dialect arguments."""
-    db_url = settings.DATABASE_URL
+    db_url = settings.DATABASE_URL or os.getenv("DATABASE_URL", "sqlite:///./signaldesk.db")
 
-    # Handle Postgres vs SQLite args
+    # Normalize Postgres URL for psycopg v3
+    if db_url.startswith("postgresql://"):
+        db_url = db_url.replace("postgresql://", "postgresql+psycopg://", 1)
+
     if db_url.startswith("sqlite"):
         return create_engine(
             db_url,
             connect_args={"check_same_thread": False}
         )
     else:
-        # Neon PostgreSQL connection
+        # Neon Cloud PostgreSQL connection with pooling
         return create_engine(
             db_url,
             pool_pre_ping=True,
@@ -52,7 +55,7 @@ def init_db():
         if count == 0:
             csv_path = os.path.join(settings.DATA_DIR, "raw", "customer_support_tickets.csv")
             if os.path.exists(csv_path):
-                print("Seeding initial tickets into database from customer_support_tickets.csv...")
+                print("Seeding initial tickets into Neon PostgreSQL from customer_support_tickets.csv...")
                 df = pd.read_csv(csv_path)
                 tickets_to_seed = []
                 for _, row in df.head(300).iterrows():
@@ -68,7 +71,7 @@ def init_db():
                     tickets_to_seed.append(t)
                 db.bulk_save_objects(tickets_to_seed)
                 db.commit()
-                print(f"Seeded {len(tickets_to_seed)} tickets into database.")
+                print(f"Seeded {len(tickets_to_seed)} tickets into Neon PostgreSQL.")
     except Exception as e:
         print(f"Database initialization warning: {e}")
         db.rollback()

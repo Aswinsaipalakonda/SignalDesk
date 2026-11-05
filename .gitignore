@@ -48,3 +48,4 @@ frontend/.vite/
 .playwright-mcp/
 .DS_Store
 Thumbs.db
+.neon

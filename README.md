@@ -120,3 +120,4 @@ npm run build
 2. Set Root Directory to `frontend`.
 3. Add environment variable:
    * `VITE_API_BASE_URL`: URL of your Render backend (e.g. `https://signaldesk-api.onrender.com/api`).
+
