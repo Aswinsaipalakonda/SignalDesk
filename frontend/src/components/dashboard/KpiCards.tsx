@@ -10,17 +10,17 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
   const getIcon = (name: string, color: string) => {
     switch (name) {
       case 'ticket':
-        return <Ticket size={18} strokeWidth={1.75} style={{ color }} />;
+        return <Ticket size={17} strokeWidth={2} style={{ color }} />;
       case 'credit-card':
-        return <CreditCard size={18} strokeWidth={1.75} style={{ color }} />;
+        return <CreditCard size={17} strokeWidth={2} style={{ color }} />;
       case 'headphones':
-        return <Headphones size={18} strokeWidth={1.75} style={{ color }} />;
+        return <Headphones size={17} strokeWidth={2} style={{ color }} />;
       case 'alert-triangle':
-        return <AlertTriangle size={18} strokeWidth={1.75} style={{ color }} />;
+        return <AlertTriangle size={17} strokeWidth={2} style={{ color }} />;
       case 'target':
-        return <Target size={18} strokeWidth={1.75} style={{ color }} />;
+        return <Target size={17} strokeWidth={2} style={{ color }} />;
       default:
-        return <Ticket size={18} strokeWidth={1.75} style={{ color }} />;
+        return <Ticket size={17} strokeWidth={2} style={{ color }} />;
     }
   };
 
@@ -37,39 +37,41 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
       {metrics.map((m, idx) => (
         <div
           key={m.title}
-          className="bg-white border border-border-subtle hover:border-border-hover rounded-2xl p-4.5 shadow-card hover:shadow-card-hover transition-all duration-200 flex flex-col justify-between"
+          className="bg-white border border-[#EAEFEA] hover:border-[#D1E0D3] rounded-2xl p-4.5 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.04)] hover:shadow-[0_6px_20px_-4px_rgba(14,94,68,0.08)] transition-all duration-200 flex flex-col justify-between group"
         >
           {/* Header */}
-          <div className="flex items-center gap-2 text-text-muted text-xs font-semibold mb-2.5">
-            {getIcon(m.icon, m.color)}
-            <span>{m.title}</span>
+          <div className="flex items-center gap-2 text-[#64748B] text-xs font-semibold mb-2">
+            <div className="w-7 h-7 rounded-lg bg-[#F8FAF8] border border-[#EAEFEA] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              {getIcon(m.icon, m.color)}
+            </div>
+            <span className="truncate">{m.title}</span>
           </div>
 
           {/* Value */}
-          <div className="text-2xl lg:text-3xl font-extrabold text-text-main tracking-tight mb-2">
+          <div className="text-2xl lg:text-[28px] font-extrabold text-[#1A202C] tracking-tight mb-2.5">
             {m.value}
           </div>
 
           {/* Footer Trend & Sparkline */}
-          <div className="flex items-center justify-between mt-1">
-            <span className="inline-flex items-center gap-0.5 text-xs font-bold px-1.5 py-0.5 rounded-md bg-brand-green-light text-brand-green">
+          <div className="flex items-center justify-between pt-1 border-t border-[#F8FAF8]">
+            <span className="inline-flex items-center gap-0.5 text-[11px] font-bold px-1.5 py-0.5 rounded-md bg-[#EBF5F0] text-[#0E5E44]">
               ↑ {m.trend}
             </span>
 
-            {/* Sparkline */}
-            <svg width="78" height="22" viewBox="0 0 90 22" fill="none" className="overflow-visible">
+            {/* Sparkline curve */}
+            <svg width="72" height="20" viewBox="0 0 90 22" fill="none" className="overflow-visible opacity-85 group-hover:opacity-100 transition-opacity">
               <path
                 d={sparklineD[idx % sparklineD.length]}
                 stroke={m.color}
-                strokeWidth="2"
+                strokeWidth="2.2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
             </svg>
 
             {m.title === 'Model Accuracy' && (
-              <span title="Test evaluation accuracy on held-out split" className="text-slate-400 hover:text-slate-600 cursor-pointer">
-                <Info size={14} />
+              <span title="Test evaluation accuracy on 2,385 held-out records" className="text-slate-300 hover:text-slate-500 cursor-pointer">
+                <Info size={13} />
               </span>
             )}
           </div>

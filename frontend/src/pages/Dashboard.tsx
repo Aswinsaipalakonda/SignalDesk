@@ -32,8 +32,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, lastClassified
 
   if (loading || !data) {
     return (
-      <div className="p-8 space-y-6 animate-pulse">
-        <div className="h-48 bg-slate-100 rounded-3xl w-full"></div>
+      <div className="p-8 space-y-6 animate-pulse max-w-[1380px] mx-auto">
+        <div className="h-56 bg-slate-100 rounded-3xl w-full"></div>
         <div className="grid grid-cols-5 gap-4">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="h-28 bg-slate-100 rounded-2xl"></div>
@@ -44,11 +44,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, lastClassified
   }
 
   return (
-    <div className="p-8 max-w-[1400px] mx-auto">
+    <div className="p-8 max-w-[1380px] mx-auto">
       {/* Hero Section */}
       <HeroBanner
         onAnalyzeClick={() => onNavigate('analyze')}
-        onLearnMoreClick={() => onNavigate('about')}
+        onPerformanceClick={() => onNavigate('performance')}
         lastClassified={lastClassified}
       />
 
@@ -56,7 +56,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, lastClassified
       <KpiCards metrics={data.kpi_cards} />
 
       {/* 3-Column Analytics Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
         <div className="lg:col-span-4">
           <CategoryDonut data={data.category_distribution} />
         </div>
