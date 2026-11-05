@@ -44,11 +44,17 @@
 ## 🖼️ Product Tour
 
 <p align="center">
-  <a href="docs/screenshots/overview.png"><img src="docs/screenshots/overview.png" width="49%" alt="Overview dashboard" /></a>
-  <a href="docs/screenshots/analyze.png"><img src="docs/screenshots/analyze.png" width="49%" alt="Analyze ticket page" /></a>
+  <a href="docs/screenshots/overview.png"><img src="docs/screenshots/overview.png" width="100%" alt="Overview dashboard" /></a>
 </p>
 <p align="center">
-  <sub><b>Overview</b> · live KPIs, filters, and workload trends &nbsp;&nbsp; <b>Analyze</b> · explainable triage</sub>
+  <sub><b>Overview</b> · live KPIs, filters, and workload trends</sub>
+</p>
+
+<p align="center">
+  <a href="docs/screenshots/analyze.png"><img src="docs/screenshots/analyze.png" width="100%" alt="Analyze ticket with prediction result" /></a>
+</p>
+<p align="center">
+  <sub><b>Analyze</b> · live category prediction, confidence, priority rationale, and probability distribution</sub>
 </p>
 
 <p align="center">
