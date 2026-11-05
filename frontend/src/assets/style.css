@@ -1,0 +1,418 @@
+/* SignalDesk Modern SaaS Styling System */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg-main: #F8FAF8;
+  --bg-card: #FFFFFF;
+  --border-subtle: #E8EFE9;
+  --border-hover: #D1E0D3;
+  --text-main: #1A202C;
+  --text-muted: #64748B;
+  --text-subtle: #94A3B8;
+  --brand-green: #0E5E44;
+  --brand-green-hover: #094733;
+  --brand-green-light: #EBF5F0;
+  --brand-teal: #14B8A6;
+  --brand-teal-light: #F0FDFA;
+  --priority-high-bg: #FEF2F2;
+  --priority-high-text: #DC2626;
+  --priority-high-border: #FEE2E2;
+  --priority-med-bg: #FFFBEB;
+  --priority-med-text: #D97706;
+  --priority-med-border: #FEF3C7;
+  --priority-low-bg: #F0FDF4;
+  --priority-low-text: #16A34A;
+  --priority-low-border: #DCFCE7;
+  --card-radius: 16px;
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 6px 16px rgba(14, 94, 68, 0.02);
+  --card-shadow-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 12px 24px -4px rgba(14, 94, 68, 0.06);
+}
+
+/* Base Body and Streamlit Overrides */
+html, body, [class*="css"], .stApp {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  background-color: var(--bg-main) !important;
+  color: var(--text-main) !important;
+  letter-spacing: -0.01em;
+}
+
+/* Remove default Streamlit top header padding */
+.main .block-container {
+  padding-top: 1.5rem !important;
+  padding-bottom: 3rem !important;
+  max-width: 1380px !important;
+}
+
+/* Top Bar Navigation & Header */
+.signaldesk-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0 1.25rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 1.5rem;
+}
+
+/* Sidebar Customization */
+section[data-testid="stSidebar"] {
+  background-color: #FFFFFF !important;
+  border-right: 1px solid var(--border-subtle) !important;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.015);
+}
+
+section[data-testid="stSidebar"] .block-container {
+  padding-top: 2rem !important;
+}
+
+/* Custom Card Styles */
+.sd-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  padding: 1.25rem;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.sd-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--card-shadow-hover);
+  transform: translateY(-2px);
+}
+
+/* Hero Section */
+.sd-hero-card {
+  background: #F7FAF8;
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 2.25rem 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1.75rem;
+  min-height: 250px;
+  box-shadow: var(--card-shadow);
+}
+
+.sd-hero-content {
+  max-width: 58%;
+  z-index: 2;
+}
+
+.sd-hero-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.2;
+  margin-bottom: 0.6rem;
+}
+
+.sd-hero-title span {
+  color: var(--brand-green);
+}
+
+.sd-hero-sub {
+  font-size: 1.02rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin-bottom: 1.5rem;
+}
+
+.sd-hero-buttons {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.sd-hero-image-wrap {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 42%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  overflow: hidden;
+  border-radius: 0 20px 20px 0;
+}
+
+.sd-hero-image {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Floating overlay badge inside hero */
+.sd-floating-badge {
+  position: absolute;
+  right: 32%;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 0.85rem 1.1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  z-index: 3;
+  min-width: 190px;
+  animation: fadeInSoft 0.6s ease-out;
+}
+
+/* KPI Stat Cards */
+.sd-kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 1.15rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--card-shadow);
+  transition: all 0.2s ease;
+  height: 100%;
+}
+
+.sd-kpi-card:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.sd-kpi-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+}
+
+.sd-kpi-icon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sd-kpi-val {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 0.4rem;
+}
+
+.sd-kpi-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+}
+
+.sd-trend-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  background: var(--brand-green-light);
+  color: var(--brand-green);
+}
+
+/* Priority Badges */
+.sd-badge-high {
+  background: var(--priority-high-bg);
+  color: var(--priority-high-text);
+  border: 1px solid var(--priority-high-border);
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.sd-badge-med {
+  background: var(--priority-med-bg);
+  color: var(--priority-med-text);
+  border: 1px solid var(--priority-med-border);
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.sd-badge-low {
+  background: var(--priority-low-bg);
+  color: var(--priority-low-text);
+  border: 1px solid var(--priority-low-border);
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+/* Recent Ticket Item */
+.sd-recent-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid #F1F5F2;
+  transition: background 0.15s ease;
+  border-radius: 8px;
+}
+
+.sd-recent-item:last-child {
+  border-bottom: none;
+}
+
+.sd-recent-item:hover {
+  background: #F8FAF9;
+}
+
+.sd-recent-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 78%;
+}
+
+.sd-recent-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #F0FDF4;
+  border: 1px solid #DCFCE7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brand-green);
+  flex-shrink: 0;
+}
+
+.sd-recent-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px;
+}
+
+.sd-recent-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Buttons */
+.stButton > button {
+  background-color: var(--brand-green) !important;
+  color: #FFFFFF !important;
+  border-radius: 10px !important;
+  border: 1px solid var(--brand-green) !important;
+  padding: 0.5rem 1.25rem !important;
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 1px 2px rgba(14, 94, 68, 0.1) !important;
+}
+
+.stButton > button:hover {
+  background-color: var(--brand-green-hover) !important;
+  border-color: var(--brand-green-hover) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 10px rgba(14, 94, 68, 0.2) !important;
+}
+
+.stButton > button:active {
+  transform: translateY(0) !important;
+}
+
+/* Secondary Button Style */
+.sd-btn-secondary {
+  background: #FFFFFF;
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 0.5rem 1.15rem;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.sd-btn-secondary:hover {
+  border-color: #CBD5E1;
+  background: #F8FAFC;
+}
+
+/* Inputs and Forms */
+div[data-baseweb="textarea"] {
+  border-radius: 12px !important;
+  border-color: var(--border-subtle) !important;
+  background: #FFFFFF !important;
+  transition: all 0.2s ease !important;
+}
+
+div[data-baseweb="textarea"]:focus-within {
+  border-color: var(--brand-green) !important;
+  box-shadow: 0 0 0 3px rgba(14, 94, 68, 0.12) !important;
+}
+
+/* Dataframe & Tables */
+div[data-testid="stDataFrame"] {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+
+/* Sidebar Navigation Items */
+.sd-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 0.35rem;
+  transition: all 0.18s ease;
+  text-decoration: none !important;
+}
+
+.sd-nav-item:hover {
+  background: #F4F7F4;
+  color: var(--text-main);
+}
+
+.sd-nav-item.active {
+  background: var(--brand-green-light);
+  color: var(--brand-green);
+  font-weight: 750;
+}
+
+@keyframes fadeInSoft {
+  from { opacity: 0; transform: translateY(-46%); }
+  to { opacity: 1; transform: translateY(-50%); }
+}
+
