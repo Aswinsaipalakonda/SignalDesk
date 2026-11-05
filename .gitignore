@@ -6,6 +6,8 @@
 .env.*.local
 backend/.env
 frontend/.env
+# Allow the production env file (no secrets, just the public API URL)
+!frontend/.env.production
 *.pem
 *.key
 *.token
