@@ -5,7 +5,7 @@
 
   <p>
     SignalDesk classifies support inquiries into six departments, explains operational
-    priority, and turns every submission into workload analytics — with a genuinely
+    priority, and turns every submission into workload analytics - with a genuinely
     trained Scikit-learn model and an auditable React dashboard.
   </p>
 
